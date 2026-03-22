@@ -1,0 +1,38 @@
+.about-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.icon-green { background: #e8f5e9; color: #2e7d32; }
+.icon-blue { background: #e3f2fd; color: #1565c0; }
+.icon-purple { background: #f3e5f5; color: #7b1fa2; }
+.icon-amber { background: #fff8e1; color: #f57f17; }
+
+.about-container > mat-card mat-card-content p {
+  margin-top: 0.75rem;
+  line-height: 1.7;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.about-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.about-features mat-card-content p {
+  margin-top: 0.5rem;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.6);
+}

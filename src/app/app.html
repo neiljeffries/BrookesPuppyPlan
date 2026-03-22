@@ -1,0 +1,26 @@
+<mat-toolbar color="primary" class="toolbar">
+  <a mat-button routerLink="/" class="brand">
+    <mat-icon>pets</mat-icon>
+    Brooke's Puppy Plan
+  </a>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+    <mat-icon>home</mat-icon> Home
+  </a>
+  <a mat-button routerLink="/about" routerLinkActive="active-link">
+    <mat-icon>info</mat-icon> About
+  </a>
+  <a mat-button routerLink="/training" routerLinkActive="active-link">
+    <mat-icon>school</mat-icon> Training
+  </a>
+  <a mat-button routerLink="/notes" routerLinkActive="active-link">
+    <mat-icon>sticky_note_2</mat-icon> Notes
+  </a>
+  <a mat-button routerLink="/contact" routerLinkActive="active-link">
+    <mat-icon>mail</mat-icon> Contact
+  </a>
+</mat-toolbar>
+
+<main class="main">
+  <router-outlet />
+</main>

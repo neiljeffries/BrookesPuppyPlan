@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Body -->
+  <ellipse cx="100" cy="140" rx="50" ry="35" fill="#C4956A"/>
+  <!-- Head -->
+  <circle cx="100" cy="85" r="40" fill="#D4A574"/>
+  <!-- Left ear -->
+  <ellipse cx="65" cy="55" rx="18" ry="28" fill="#A0714F" transform="rotate(-15 65 55)"/>
+  <ellipse cx="65" cy="55" rx="12" ry="20" fill="#C4956A" transform="rotate(-15 65 55)"/>
+  <!-- Right ear -->
+  <ellipse cx="135" cy="55" rx="18" ry="28" fill="#A0714F" transform="rotate(15 135 55)"/>
+  <ellipse cx="135" cy="55" rx="12" ry="20" fill="#C4956A" transform="rotate(15 135 55)"/>
+  <!-- Left eye -->
+  <circle cx="85" cy="80" r="6" fill="#333"/>
+  <circle cx="83" cy="78" r="2" fill="#fff"/>
+  <!-- Right eye -->
+  <circle cx="115" cy="80" r="6" fill="#333"/>
+  <circle cx="113" cy="78" r="2" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="95" rx="8" ry="6" fill="#333"/>
+  <ellipse cx="100" cy="93" rx="3" ry="2" fill="#666"/>
+  <!-- Mouth -->
+  <path d="M92 100 Q100 110 108 100" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Tongue -->
+  <ellipse cx="100" cy="108" rx="5" ry="7" fill="#E8838A"/>
+  <!-- Left front paw -->
+  <ellipse cx="75" cy="170" rx="12" ry="8" fill="#D4A574"/>
+  <!-- Right front paw -->
+  <ellipse cx="125" cy="170" rx="12" ry="8" fill="#D4A574"/>
+  <!-- Tail -->
+  <path d="M150 135 Q170 110 160 95" stroke="#C4956A" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Spots -->
+  <circle cx="80" cy="130" r="8" fill="#A0714F" opacity="0.5"/>
+  <circle cx="115" cy="145" r="6" fill="#A0714F" opacity="0.5"/>
+</svg>

@@ -1,0 +1,131 @@
+<div class="notes-container">
+  <div class="notes-header">
+    <div class="header-icon">
+      <mat-icon>sticky_note_2</mat-icon>
+    </div>
+    <h2>My Puppy Notes</h2>
+    <p>Keep track of everything — vet visits, training progress, favourite toys, and more.</p>
+  </div>
+
+  <!-- New Note Form -->
+  <mat-card class="new-note-card">
+    <mat-card-content>
+      <form class="note-form" (ngSubmit)="addNote()">
+        <mat-form-field appearance="fill">
+          <mat-label>Title</mat-label>
+          <mat-icon matPrefix>title</mat-icon>
+          <input matInput [(ngModel)]="newTitle" name="title" placeholder="e.g. Vet appointment" />
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Note</mat-label>
+          <mat-icon matPrefix>edit_note</mat-icon>
+          <textarea matInput [(ngModel)]="newContent" name="content" rows="3" placeholder="Write your note..."></textarea>
+        </mat-form-field>
+        <button mat-flat-button type="submit">
+          <mat-icon>add</mat-icon> Add Note
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Import / Export -->
+  <div class="io-bar">
+    <button mat-flat-button (click)="exportNotes()" [disabled]="notes.length === 0">
+      <mat-icon>download</mat-icon> Export Notes
+    </button>
+    <button mat-flat-button (click)="fileInput.click()">
+      <mat-icon>upload</mat-icon> Import Notes
+    </button>
+    <input #fileInput type="file" accept=".json" hidden (change)="onImportFile($event)" />
+    <span class="spacer"></span>
+    @if (!confirmingDeleteAll) {
+      <button mat-flat-button (click)="confirmingDeleteAll = true" [disabled]="notes.length === 0">
+        <mat-icon>delete_sweep</mat-icon> Delete All
+      </button>
+    } @else {
+      <span class="confirm-bar">
+        <span>Delete all notes?</span>
+        <button mat-flat-button (click)="deleteAllNotes()">
+          <mat-icon>check</mat-icon> Yes, delete
+        </button>
+        <button mat-flat-button (click)="confirmingDeleteAll = false">Cancel</button>
+      </span>
+    }
+    @if (importMessage) {
+      <span class="import-msg">{{ importMessage }}</span>
+    }
+  </div>
+
+  <!-- Notes Table -->
+  @if (notes.length === 0) {
+    <div class="empty-state">
+      <mat-icon>note_add</mat-icon>
+      <p>No notes yet — add your first one above!</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="notes">
+        <!-- Title Column -->
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let note">
+            @if (editingId === note.id) {
+              <mat-form-field appearance="fill" class="inline-field">
+                <input matInput [(ngModel)]="editTitle" />
+              </mat-form-field>
+            } @else {
+              <span class="note-title">{{ note.title }}</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Content Column -->
+        <ng-container matColumnDef="content">
+          <th mat-header-cell *matHeaderCellDef>Note</th>
+          <td mat-cell *matCellDef="let note">
+            @if (editingId === note.id) {
+              <mat-form-field appearance="fill" class="inline-field">
+                <textarea matInput [(ngModel)]="editContent" rows="2"></textarea>
+              </mat-form-field>
+            } @else {
+              <span class="note-content">{{ note.content }}</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Date Column -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Updated</th>
+          <td mat-cell *matCellDef="let note">
+            {{ note.updatedAt | date:'shortDate' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let note">
+            @if (editingId === note.id) {
+              <button mat-icon-button color="primary" (click)="saveEdit()" title="Save">
+                <mat-icon>save</mat-icon>
+              </button>
+              <button mat-icon-button (click)="cancelEdit()" title="Cancel">
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <button mat-icon-button (click)="startEdit(note)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteNote(note.id)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  }
+</div>

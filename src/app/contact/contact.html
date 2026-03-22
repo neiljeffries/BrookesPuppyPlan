@@ -1,0 +1,38 @@
+<div class="contact-container">
+  <div class="contact-header">
+    <div class="header-icon">
+      <mat-icon>pets</mat-icon>
+    </div>
+    <h2>Get in Touch</h2>
+    <p>Have questions about raising your Yorkshire Terrier? We'd love to hear from you!</p>
+  </div>
+
+  <form class="contact-form">
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <mat-icon matPrefix>person</mat-icon>
+        <input matInput placeholder="Your name" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <mat-icon matPrefix>email</mat-icon>
+        <input matInput placeholder="your@email.com" type="email" />
+      </mat-form-field>
+    </div>
+    <mat-form-field appearance="fill">
+      <mat-label>Subject</mat-label>
+      <mat-icon matPrefix>topic</mat-icon>
+      <input matInput placeholder="What's this about?" />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Message</mat-label>
+      <mat-icon matPrefix>chat</mat-icon>
+      <textarea matInput placeholder="Tell us what's on your mind..." rows="6"></textarea>
+    </mat-form-field>
+    <button mat-flat-button type="button">
+      <mat-icon>send</mat-icon>
+      Send Message
+    </button>
+  </form>
+</div>
