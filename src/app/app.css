@@ -6,6 +6,10 @@
   color: var(--mat-sys-on-primary, #ffffff);
 }
 
+.toolbar a {
+  color: white;
+}
+
 .brand {
   font-size: 1.2rem;
   font-weight: 500;
