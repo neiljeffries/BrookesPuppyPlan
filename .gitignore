@@ -5,6 +5,7 @@
 /tmp
 /out-tsc
 /bazel-out
+/firebase-website
 
 # Node
 /node_modules
@@ -42,3 +43,11 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Firebase deployment and cache
+/.firebase/
+/.firebase-website/
+/.firebase/*.cache
+
+# If public/ is used for deployment output, uncomment the next line:
+#/public/
