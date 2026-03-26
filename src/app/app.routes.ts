@@ -6,4 +6,5 @@ export const routes: Routes = [
   { path: 'training', loadComponent: () => import('./training/training').then(m => m.Training) },
   { path: 'notes', loadComponent: () => import('./notes/notes').then(m => m.Notes) },
   { path: 'contact', loadComponent: () => import('./contact/contact').then(m => m.Contact) },
+  { path: 'livestream', loadComponent: () => import('./livestream/livestream').then(m => m.Livestream) },
 ];

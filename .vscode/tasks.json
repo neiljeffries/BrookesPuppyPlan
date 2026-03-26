@@ -37,6 +37,16 @@
           }
         }
       }
+    },
+    {
+      "label": "Build & Deploy to Firebase",
+      "type": "shell",
+      "command": "${workspaceFolder}/build-deploy-firebase.bat",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
     }
   ]
 }
