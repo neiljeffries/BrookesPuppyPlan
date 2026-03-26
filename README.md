@@ -12,19 +12,6 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
 
 ## Building
 
@@ -54,6 +41,52 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-## Additional Resources
+## Firebase Hosting
+
+This project is configured for deployment to [Firebase Hosting](https://firebase.google.com/docs/hosting).
+
+### 1. Initialize Firebase in your project
+
+If you haven't already, install the Firebase CLI globally:
+
+```bash
+npm install -g firebase-tools
+```
+
+Then, in your project root, run:
+
+```bash
+firebase login
+firebase init
+```
+
+- Select **Hosting** (and optionally other features).
+- Choose your Firebase project or create a new one.
+- Set the public directory to `public` (or your preferred output folder).
+- Configure as a single-page app (rewrite all URLs to /index.html): **Yes**
+- Do **not** overwrite your `index.html` if prompted (unless you want a blank one).
+
+### 2. Build and Deploy
+
+1. To build your Angular app and deploy to Firebase Hosting:
+
+```bash
+ng build --configuration production
+```
+
+2. Copy the contents of `dist/brookes_puppy_plan/browser` to your `firebase-website` folder **or use the deployment script build-deploy-firebase.bat**.
+
+3. Then deploy:
+
+```bash
+firebase deploy
+```
+
+### 3. Useful Firebase Info
+
+- **Firebase config** is in `src/app/firebase.ts` and is safe for client-side use.
+- See [Firebase Hosting Docs](https://firebase.google.com/docs/hosting) for advanced configuration (rewrites, redirects, custom domains, etc.).
+
+---
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
