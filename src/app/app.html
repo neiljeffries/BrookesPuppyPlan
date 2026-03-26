@@ -1,7 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="over" class="mobile-sidenav">
     <div class="sidenav-header">
-      <mat-icon>pets</mat-icon>
+      <span class="sidenav-paw">🐾</span>
       <span>Brooke's Puppy Plan</span>
     </div>
     <mat-nav-list>
@@ -27,35 +27,50 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-toolbar color="primary" class="toolbar">
+    <mat-toolbar class="toolbar">
       <button mat-icon-button class="menu-button" (click)="sidenav.toggle()" aria-label="Toggle navigation menu">
         <mat-icon>menu</mat-icon>
       </button>
       <a mat-button routerLink="/" class="brand">
-        <mat-icon>pets</mat-icon>
+        <span class="brand-paw">🐾</span>
         Brooke's Puppy Plan
       </a>
       <span class="spacer"></span>
       <nav class="desktop-nav">
-        <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+        <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
           <mat-icon>home</mat-icon> Home
         </a>
-        <a mat-button routerLink="/about" routerLinkActive="active-link">
+        <span class="bone-divider">🦴</span>
+        <a mat-button routerLink="/about" routerLinkActive="active-link" class="nav-link">
           <mat-icon>info</mat-icon> About
         </a>
-        <a mat-button routerLink="/training" routerLinkActive="active-link">
+        <span class="bone-divider">🦴</span>
+        <a mat-button routerLink="/training" routerLinkActive="active-link" class="nav-link">
           <mat-icon>school</mat-icon> Training
         </a>
-        <a mat-button routerLink="/notes" routerLinkActive="active-link">
+        <span class="bone-divider">🦴</span>
+        <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
           <mat-icon>sticky_note_2</mat-icon> Notes
         </a>
-        <a mat-button routerLink="/contact" routerLinkActive="active-link">
+        <span class="bone-divider">🦴</span>
+        <a mat-button routerLink="/contact" routerLinkActive="active-link" class="nav-link">
           <mat-icon>mail</mat-icon> Contact
         </a>
-        <a mat-button routerLink="/livestream" routerLinkActive="active-link">
+        <span class="bone-divider">🦴</span>
+        <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
           <mat-icon>live_tv</mat-icon> Dog Whisperer
         </a>
       </nav>
+      <div class="toolbar-paws" aria-hidden="true">
+        <span class="floating-paw paw-1">🐾</span>
+        <span class="floating-paw paw-2">🐾</span>
+        <span class="floating-paw paw-3">🐾</span>
+        <span class="floating-paw paw-4">🐾</span>
+        <span class="floating-paw paw-5">🐾</span>
+        <span class="floating-paw paw-6">🐾</span>
+        <span class="floating-paw paw-7">🐾</span>
+        <span class="floating-paw paw-8">🐾</span>
+      </div>
     </mat-toolbar>
 
     <main class="main">

@@ -7,30 +7,157 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--mat-sys-primary, #005faf);
-  color: var(--mat-sys-on-primary, #ffffff);
+  background: linear-gradient(135deg, #039be5 0%, #29b6f6 40%, #4fc3f7 70%, #81d4fa 100%);
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(3, 155, 229, 0.3);
 }
 
 .toolbar a {
   color: white;
 }
 
+/* Brand / logo */
 .brand {
   font-size: 1.2rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  position: relative;
+  z-index: 2;
 }
 
-.brand mat-icon {
-  margin-right: 0.5rem;
+.brand-paw {
+  display: inline-block;
+  font-size: 1.4rem;
+  margin-right: 0.35rem;
+  animation: wiggle 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(8deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(0deg); }
+}
+
+/* Bone dividers between nav links */
+.bone-divider {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 -2px;
+  pointer-events: none;
+}
+
+/* Nav link pill style */
+.nav-link {
+  border-radius: 999px !important;
+  transition: background 0.25s, transform 0.2s !important;
+  position: relative;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+.active-link {
+  background: rgba(255, 255, 255, 0.2) !important;
+  font-weight: 500;
+}
+
+/* Floating paw prints – subtle decorative accents */
+.toolbar-paws {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floating-paw {
+  position: absolute;
+  opacity: 0.12;
+  font-size: 2.6rem;
+  animation: drift 12s ease-in-out infinite;
+}
+
+.paw-1 {
+  top: 2px;
+  right: 12%;
+  animation-delay: 0s;
+}
+
+.paw-2 {
+  bottom: 2px;
+  right: 35%;
+  animation-delay: -4s;
+  font-size: 2rem;
+  transform: rotate(-25deg);
+}
+
+.paw-3 {
+  top: 4px;
+  right: 55%;
+  animation-delay: -8s;
+  font-size: 1.8rem;
+  transform: rotate(15deg);
+}
+
+.paw-4 {
+  bottom: 0;
+  right: 5%;
+  animation-delay: -2s;
+  font-size: 1.9rem;
+  transform: rotate(-10deg);
+}
+
+.paw-5 {
+  top: 0;
+  right: 22%;
+  animation-delay: -6s;
+  font-size: 1.6rem;
+  transform: rotate(30deg);
+}
+
+.paw-6 {
+  bottom: 2px;
+  right: 45%;
+  animation-delay: -10s;
+  font-size: 2.2rem;
+  transform: rotate(-20deg);
+}
+
+.paw-7 {
+  top: 6px;
+  right: 70%;
+  animation-delay: -3s;
+  font-size: 1.8rem;
+  transform: rotate(10deg);
+}
+
+.paw-8 {
+  bottom: 4px;
+  right: 80%;
+  animation-delay: -7s;
+  font-size: 2rem;
+  transform: rotate(-35deg);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.12; }
+  50% { transform: translateY(-3px) rotate(8deg); opacity: 0.18; }
 }
 
 .spacer {
   flex: 1;
-}
-
-.active-link {
-  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .main {
@@ -41,6 +168,8 @@
 .desktop-nav {
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .desktop-nav a {
@@ -51,11 +180,14 @@
 .menu-button {
   display: none;
   color: white;
+  position: relative;
+  z-index: 2;
 }
 
 /* Mobile sidenav drawer */
 .mobile-sidenav {
   width: 280px;
+  background: linear-gradient(180deg, #e1f5fe 0%, #fff 30%);
 }
 
 .sidenav-header {
@@ -64,20 +196,21 @@
   gap: 0.75rem;
   padding: 1.25rem 1rem;
   font-size: 1.1rem;
-  font-weight: 500;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  color: var(--mat-sys-primary, #005faf);
+  font-weight: 600;
+  border-bottom: 2px solid #b3e5fc;
+  color: #0277bd;
+  background: linear-gradient(135deg, #e1f5fe, #b3e5fc);
 }
 
-.sidenav-header mat-icon {
-  font-size: 28px;
-  width: 28px;
-  height: 28px;
+.sidenav-paw {
+  font-size: 1.6rem;
+  animation: wiggle 2.5s ease-in-out infinite;
 }
 
 .mobile-sidenav .active-link {
-  background: rgba(0, 95, 175, 0.08) !important;
-  color: var(--mat-sys-primary, #005faf);
+  background: rgba(3, 155, 229, 0.1) !important;
+  color: #0277bd;
+  font-weight: 500;
 }
 
 /* ===== Mobile breakpoint (768px and below) ===== */

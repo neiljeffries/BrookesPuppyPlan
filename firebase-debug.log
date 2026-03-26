@@ -1,0 +1,32 @@
+[debug] [2026-03-26T22:33:39.684Z] ----------------------------------------------------------------------
+[debug] [2026-03-26T22:33:39.686Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\n_e_i\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-26T22:33:39.686Z] CLI Version:   15.11.0
+[debug] [2026-03-26T22:33:39.686Z] Platform:      win32
+[debug] [2026-03-26T22:33:39.686Z] Node Version:  v24.14.0
+[debug] [2026-03-26T22:33:39.686Z] Time:          Thu Mar 26 2026 18:33:39 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-03-26T22:33:39.687Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-26T22:33:40.548Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-26T22:33:40.548Z] > authorizing via signed-in user (neiljeffries@gmail.com)
+[debug] [2026-03-26T22:33:40.548Z] [iam] checking project neiljeffries-e25e8 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-26T22:33:40.549Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:40.549Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:40.549Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions [none]
+[debug] [2026-03-26T22:33:40.549Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions  x-goog-user-project=neiljeffries-e25e8
+[debug] [2026-03-26T22:33:40.549Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-26T22:33:40.754Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions 403
+[debug] [2026-03-26T22:33:40.755Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions {"error":{"code":403,"message":"Cloud Resource Manager API has not been used in project neiljeffries-e25e8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=neiljeffries-e25e8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/neiljeffries-e25e8","activationUrl":"https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=neiljeffries-e25e8","service":"cloudresourcemanager.googleapis.com","serviceTitle":"Cloud Resource Manager API","containerInfo":"neiljeffries-e25e8"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Resource Manager API has not been used in project neiljeffries-e25e8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=neiljeffries-e25e8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=neiljeffries-e25e8"}]}]}}
+[debug] [2026-03-26T22:33:40.755Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/neiljeffries-e25e8:testIamPermissions had HTTP Error: 403, Cloud Resource Manager API has not been used in project neiljeffries-e25e8 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=neiljeffries-e25e8 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-03-26T22:33:40.755Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:40.755Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:40.755Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/neiljeffries-e25e8 [none]
+[debug] [2026-03-26T22:33:41.009Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/neiljeffries-e25e8 200
+[debug] [2026-03-26T22:33:41.009Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/neiljeffries-e25e8 {"projectId":"neiljeffries-e25e8","projectNumber":"215210216279","displayName":"neiljeffries","name":"projects/neiljeffries-e25e8","resources":{"hostingSite":"neiljeffries-e25e8","realtimeDatabaseInstance":"neiljeffries-e25e8","locationId":"us-central"},"state":"ACTIVE","etag":"1_f4d7201b-a07d-4d2a-84c8-c40301f5ec8d"}
+[info] 
+[info] === Deploying to 'neiljeffries-e25e8'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-03-26T22:33:41.011Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:41.011Z] Checked if tokens are valid: true, expires at: 1774567570647
+[debug] [2026-03-26T22:33:41.011Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/neiljeffries-e25e8/versions [none]
+[debug] [2026-03-26T22:33:41.011Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/neiljeffries-e25e8/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
