@@ -61,6 +61,29 @@
   margin-top: 0.5rem;
 }
 
+/* Guides accordion */
+.guides-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guides-accordion mat-expansion-panel {
+  border-radius: 12px !important;
+}
+
+.guide-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.guide-content {
+  padding: 0.5rem 0;
+}
+
 /* Icon styles */
 .method-icon {
   font-size: 24px;
@@ -196,6 +219,73 @@
 @media (max-width: 600px) {
   .methods-grid {
     grid-template-columns: 1fr;
+  }
+
+  .training-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .training-header p {
+    font-size: 0.9rem;
+  }
+
+  .training-header .header-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .training-header .header-icon mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .tab-content {
+    padding: 1rem 0;
+  }
+
+  /* Hide tab icon text on small screens to prevent overflow */
+  .tab-icon {
+    margin-right: 4px;
+    font-size: 20px;
+  }
+
+  .philosophy-list {
+    padding-left: 1rem;
+  }
+
+  .methods-grid mat-card-content ul {
+    padding-left: 1rem;
+  }
+
+  .steps-timeline {
+    padding-left: 2rem;
+  }
+
+  .step-number {
+    left: -2rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .quick-ref blockquote {
+    font-size: 0.9rem;
+    padding-left: 0.75rem;
+  }
+
+  .method-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .section-heading {
+    font-size: 1.1rem;
+  }
+
+  .sub-section-heading {
+    font-size: 1.05rem;
   }
 }
 

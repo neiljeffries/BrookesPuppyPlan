@@ -1,3 +1,8 @@
+/* Sidenav container fills viewport */
+.sidenav-container {
+  height: 100%;
+}
+
 .toolbar {
   position: sticky;
   top: 0;
@@ -30,4 +35,77 @@
 
 .main {
   padding: 2rem;
+}
+
+/* Desktop nav links (inline in toolbar) */
+.desktop-nav {
+  display: flex;
+  align-items: center;
+}
+
+.desktop-nav a {
+  color: white;
+}
+
+/* Hamburger menu button - hidden on desktop */
+.menu-button {
+  display: none;
+  color: white;
+}
+
+/* Mobile sidenav drawer */
+.mobile-sidenav {
+  width: 280px;
+}
+
+.sidenav-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--mat-sys-primary, #005faf);
+}
+
+.sidenav-header mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.mobile-sidenav .active-link {
+  background: rgba(0, 95, 175, 0.08) !important;
+  color: var(--mat-sys-primary, #005faf);
+}
+
+/* ===== Mobile breakpoint (768px and below) ===== */
+@media (max-width: 768px) {
+  .menu-button {
+    display: inline-flex;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .brand {
+    font-size: 1rem;
+  }
+}
+
+/* ===== Small phone breakpoint (480px and below) ===== */
+@media (max-width: 480px) {
+  .main {
+    padding: 0.75rem;
+  }
+
+  .brand {
+    font-size: 0.9rem;
+  }
 }

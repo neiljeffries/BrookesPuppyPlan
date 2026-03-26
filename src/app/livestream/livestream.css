@@ -21,3 +21,22 @@
   border: none;
   border-radius: 8px;
 }
+
+/* ===== Mobile responsive ===== */
+@media (max-width: 768px) {
+  .livestream-container {
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+  }
+
+  .video-wrapper iframe {
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .livestream-container {
+    margin: 0.5rem auto;
+    padding: 0;
+  }
+}

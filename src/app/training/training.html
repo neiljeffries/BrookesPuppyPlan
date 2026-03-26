@@ -7,7 +7,7 @@
     <p>Proven techniques from the Dog Whisperer to raise a calm, balanced Yorkshire Terrier.</p>
   </div>
 
-  <mat-tab-group animationDuration="200ms" dynamicHeight>
+  <mat-tab-group animationDuration="200ms" dynamicHeight [selectedIndex]="3">
 
     <!-- Tab 1: Core Philosophy -->
     <mat-tab>
@@ -312,14 +312,16 @@
       </ng-template>
 
       <div class="tab-content">
-        <mat-tab-group animationDuration="200ms" dynamicHeight class="nested-tabs">
+        <mat-accordion multi="false" displayMode="flat" class="guides-accordion">
 
           <!-- Sit -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">front_hand</mat-icon> Sit
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-green">front_hand</mat-icon> Sit
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -377,14 +379,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Stay -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">pan_tool</mat-icon> Stay
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-blue">pan_tool</mat-icon> Stay
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -442,14 +446,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Come -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">pets</mat-icon> Come
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-purple">pets</mat-icon> Come
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -516,14 +522,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Stop Barking -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">volume_off</mat-icon> Stop Barking
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-red">volume_off</mat-icon> Stop Barking
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -581,14 +589,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Stop Jumping -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">do_not_step</mat-icon> Stop Jumping
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-orange">do_not_step</mat-icon> Stop Jumping
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -646,14 +656,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Potty Training -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">grass</mat-icon> Potty Training
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-teal">grass</mat-icon> Potty Training
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -736,14 +748,16 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
           <!-- Walking Next to You -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">directions_walk</mat-icon> Heel Walk
-            </ng-template>
-            <div class="tab-content">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="guide-icon icon-amber">directions_walk</mat-icon> Heel Walk
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="guide-content">
               <div class="steps-timeline">
                 <div class="step">
                   <div class="step-number">1</div>
@@ -837,9 +851,9 @@
                 </div>
               </div>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
-        </mat-tab-group>
+        </mat-accordion>
       </div>
     </mat-tab>
 

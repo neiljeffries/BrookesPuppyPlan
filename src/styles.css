@@ -10,3 +10,32 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Global responsive adjustments */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+
+  /* Ensure mat-cards have comfortable padding on mobile */
+  .mat-mdc-card {
+    --mat-card-content-padding: 12px;
+  }
+
+  /* Tighten Material tab labels on mobile */
+  .mat-mdc-tab {
+    min-width: 0 !important;
+    padding: 0 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .mat-mdc-tab {
+    padding: 0 8px !important;
+    font-size: 0.8rem;
+  }
+}

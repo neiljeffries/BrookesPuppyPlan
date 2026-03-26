@@ -1,29 +1,65 @@
-<mat-toolbar color="primary" class="toolbar">
-  <a mat-button routerLink="/" class="brand">
-    <mat-icon>pets</mat-icon>
-    Brooke's Puppy Plan
-  </a>
-  <span class="spacer"></span>
-  <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
-    <mat-icon>home</mat-icon> Home
-  </a>
-  <a mat-button routerLink="/about" routerLinkActive="active-link">
-    <mat-icon>info</mat-icon> About
-  </a>
-  <a mat-button routerLink="/training" routerLinkActive="active-link">
-    <mat-icon>school</mat-icon> Training
-  </a>
-  <a mat-button routerLink="/notes" routerLinkActive="active-link">
-    <mat-icon>sticky_note_2</mat-icon> Notes
-  </a>
-  <a mat-button routerLink="/contact" routerLinkActive="active-link">
-    <mat-icon>mail</mat-icon> Contact
-  </a>
-  <a mat-button routerLink="/livestream" routerLinkActive="active-link">
-    <mat-icon>live_tv</mat-icon> Dog Whisperer
-  </a>
-</mat-toolbar>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="over" class="mobile-sidenav">
+    <div class="sidenav-header">
+      <mat-icon>pets</mat-icon>
+      <span>Brooke's Puppy Plan</span>
+    </div>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>home</mat-icon> Home
+      </a>
+      <a mat-list-item routerLink="/about" routerLinkActive="active-link" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>info</mat-icon> About
+      </a>
+      <a mat-list-item routerLink="/training" routerLinkActive="active-link" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>school</mat-icon> Training
+      </a>
+      <a mat-list-item routerLink="/notes" routerLinkActive="active-link" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>sticky_note_2</mat-icon> Notes
+      </a>
+      <a mat-list-item routerLink="/contact" routerLinkActive="active-link" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>mail</mat-icon> Contact
+      </a>
+      <a mat-list-item routerLink="/livestream" routerLinkActive="active-link" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
 
-<main class="main">
-  <router-outlet />
-</main>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="toolbar">
+      <button mat-icon-button class="menu-button" (click)="sidenav.toggle()" aria-label="Toggle navigation menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <a mat-button routerLink="/" class="brand">
+        <mat-icon>pets</mat-icon>
+        Brooke's Puppy Plan
+      </a>
+      <span class="spacer"></span>
+      <nav class="desktop-nav">
+        <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+          <mat-icon>home</mat-icon> Home
+        </a>
+        <a mat-button routerLink="/about" routerLinkActive="active-link">
+          <mat-icon>info</mat-icon> About
+        </a>
+        <a mat-button routerLink="/training" routerLinkActive="active-link">
+          <mat-icon>school</mat-icon> Training
+        </a>
+        <a mat-button routerLink="/notes" routerLinkActive="active-link">
+          <mat-icon>sticky_note_2</mat-icon> Notes
+        </a>
+        <a mat-button routerLink="/contact" routerLinkActive="active-link">
+          <mat-icon>mail</mat-icon> Contact
+        </a>
+        <a mat-button routerLink="/livestream" routerLinkActive="active-link">
+          <mat-icon>live_tv</mat-icon> Dog Whisperer
+        </a>
+      </nav>
+    </mat-toolbar>
+
+    <main class="main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

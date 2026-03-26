@@ -70,3 +70,68 @@
   line-height: 1.6;
   color: rgba(0, 0, 0, 0.6);
 }
+
+/* ===== Mobile responsive ===== */
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem 1.5rem;
+  }
+
+  .puppy-img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+
+  .content-section {
+    padding: 0 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .content-section h2 {
+    font-size: 1.25rem;
+  }
+
+  .milestone-grid,
+  .tip-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 1.5rem 0.75rem 1rem;
+  }
+
+  .puppy-img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .hero h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero p {
+    font-size: 0.9rem;
+  }
+
+  .content-section {
+    padding: 0 0.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+  }
+}
