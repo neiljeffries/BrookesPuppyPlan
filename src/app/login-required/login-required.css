@@ -1,0 +1,24 @@
+.login-required {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.lock-icon {
+  color: #f57c00;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+mat-card-content p {
+  font-size: 1.1rem;
+  margin: 1rem 0;
+  color: #555;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 1rem;
+}
