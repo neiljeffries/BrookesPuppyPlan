@@ -26,6 +26,20 @@
       <a mat-list-item routerLink="/test" routerLinkActive="active-link" (click)="closeSidenav()">
         <mat-icon matListItemIcon>science</mat-icon> Test
       </a>
+      <mat-divider></mat-divider>
+      @if (auth.user$ | async; as user) {
+        <div class="sidenav-user">
+          <img [src]="user.photoURL" [alt]="user.displayName" class="sidenav-avatar" referrerpolicy="no-referrer" />
+          <span class="sidenav-user-name">{{ user.displayName }}</span>
+        </div>
+        <a mat-list-item (click)="signOut(); closeSidenav()">
+          <mat-icon matListItemIcon>logout</mat-icon> Sign Out
+        </a>
+      } @else {
+        <a mat-list-item (click)="signIn(); closeSidenav()">
+          <mat-icon matListItemIcon>login</mat-icon> Sign in with Google
+        </a>
+      }
     </mat-nav-list>
   </mat-sidenav>
 
@@ -68,6 +82,27 @@
           <mat-icon>science</mat-icon> Test
         </a>
       </nav>
+      <div class="auth-section">
+        @if (auth.user$ | async; as user) {
+          <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-button" aria-label="User menu">
+            <img [src]="user.photoURL" [alt]="user.displayName" class="toolbar-avatar" referrerpolicy="no-referrer" />
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <div class="user-menu-header">
+              <strong>{{ user.displayName }}</strong>
+              <small>{{ user.email }}</small>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="signOut()">
+              <mat-icon>logout</mat-icon> Sign Out
+            </button>
+          </mat-menu>
+        } @else {
+          <button mat-button class="sign-in-btn" (click)="signIn()">
+            <mat-icon>login</mat-icon> Sign In
+          </button>
+        }
+      </div>
       <div class="toolbar-paws" aria-hidden="true">
         <span class="floating-paw paw-1">🐾</span>
         <span class="floating-paw paw-2">🐾</span>

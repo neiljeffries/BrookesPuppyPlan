@@ -242,3 +242,63 @@
     font-size: 0.9rem;
   }
 }
+
+/* ===== Auth section in toolbar ===== */
+.auth-section {
+  position: relative;
+  z-index: 2;
+  margin-left: 0.5rem;
+}
+
+.toolbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.avatar-button {
+  padding: 0;
+}
+
+.sign-in-btn {
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 999px !important;
+  position: relative;
+  z-index: 2;
+}
+
+.sign-in-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.user-menu-header {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.user-menu-header small {
+  color: #666;
+}
+
+/* Sidenav user info */
+.sidenav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.sidenav-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.sidenav-user-name {
+  font-weight: 500;
+  color: #333;
+}
