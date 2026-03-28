@@ -1,0 +1,56 @@
+<section class="admin-section">
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon">admin_panel_settings</mat-icon>
+      <mat-card-title>Admin — User Management</mat-card-title>
+      <mat-card-subtitle>{{ users.length }} registered user{{ users.length === 1 ? '' : 's' }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading) {
+        <p class="status">Loading users...</p>
+      } @else if (users.length === 0) {
+        <p class="status">No users found.</p>
+      } @else {
+        <table mat-table [dataSource]="users" class="user-table">
+          <ng-container matColumnDef="photo">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let user">
+              @if (user.photoURL) {
+                <img [src]="user.photoURL" [alt]="user.displayName" class="user-avatar" referrerpolicy="no-referrer" />
+              } @else {
+                <mat-icon class="user-avatar-icon">account_circle</mat-icon>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="displayName">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">{{ user.displayName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">
+              <span class="role-badge" [class.role-admin]="user.role === 'admin'">
+                {{ user.role ?? 'member' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="lastLogin">
+            <th mat-header-cell *matHeaderCellDef>Last Login</th>
+            <td mat-cell *matCellDef="let user">{{ user.lastLogin | date:'medium' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</section>

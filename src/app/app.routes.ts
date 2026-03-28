@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth.guard';
+import { adminGuard } from './admin.guard';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./home/home').then(m => m.Home) },
@@ -9,5 +10,6 @@ export const routes: Routes = [
   { path: 'notes', loadComponent: () => import('./notes/notes').then(m => m.Notes), canActivate: [authGuard] },
   { path: 'contact', loadComponent: () => import('./contact/contact').then(m => m.Contact), canActivate: [authGuard] },
   { path: 'livestream', loadComponent: () => import('./livestream/livestream').then(m => m.Livestream), canActivate: [authGuard] },
-  { path: 'test', loadComponent: () => import('./test/test').then(m => m.Test), canActivate: [authGuard] },
+  { path: 'test', loadComponent: () => import('./test/test').then(m => m.Test), canActivate: [adminGuard] },
+  { path: 'admin', loadComponent: () => import('./admin/admin').then(m => m.Admin), canActivate: [adminGuard] },
 ];

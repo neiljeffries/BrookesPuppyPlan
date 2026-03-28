@@ -1,0 +1,51 @@
+.admin-section {
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.section-icon {
+  color: #d32f2f;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.status {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 1rem;
+}
+
+.user-table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.user-avatar-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: #bdbdbd;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #e0e0e0;
+  color: #555;
+}
+
+.role-admin {
+  background: #ffcdd2;
+  color: #c62828;
+}

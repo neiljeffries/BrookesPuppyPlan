@@ -23,9 +23,14 @@
       <a mat-list-item routerLink="/livestream" routerLinkActive="active-link" (click)="closeSidenav()">
         <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
       </a>
-      <a mat-list-item routerLink="/test" routerLinkActive="active-link" (click)="closeSidenav()">
-        <mat-icon matListItemIcon>science</mat-icon> Test
-      </a>
+      @if (auth.isAdmin$ | async) {
+        <a mat-list-item routerLink="/test" routerLinkActive="active-link" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>science</mat-icon> Test
+        </a>
+        <a mat-list-item routerLink="/admin" routerLinkActive="active-link" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>admin_panel_settings</mat-icon> Admin
+        </a>
+      }
       <mat-divider></mat-divider>
       @if (auth.user$ | async; as user) {
         <div class="sidenav-user">
@@ -77,10 +82,16 @@
         <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
           <mat-icon>live_tv</mat-icon> Dog Whisperer
         </a>
-        <span class="bone-divider">🦴</span>
-        <a mat-button routerLink="/test" routerLinkActive="active-link" class="nav-link">
-          <mat-icon>science</mat-icon> Test
-        </a>
+        @if (auth.isAdmin$ | async) {
+          <span class="bone-divider">🦴</span>
+          <a mat-button routerLink="/test" routerLinkActive="active-link" class="nav-link">
+            <mat-icon>science</mat-icon> Test
+          </a>
+          <span class="bone-divider">🦴</span>
+          <a mat-button routerLink="/admin" routerLinkActive="active-link" class="nav-link admin-link">
+            <mat-icon>admin_panel_settings</mat-icon> Admin
+          </a>
+        }
       </nav>
       <div class="auth-section">
         @if (auth.user$ | async; as user) {
