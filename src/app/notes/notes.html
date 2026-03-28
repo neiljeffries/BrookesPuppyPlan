@@ -62,76 +62,59 @@
     }
   </div>
 
-  <!-- Notes Table -->
+  <!-- Notes Accordion -->
   @if (notes.length === 0) {
     <div class="empty-state">
       <mat-icon>note_add</mat-icon>
       <p>No notes yet — add your first one above!</p>
     </div>
   } @else {
-    <div class="table-wrapper">
-      <table mat-table [dataSource]="notes">
-        <!-- Title Column -->
-        <ng-container matColumnDef="title">
-          <th mat-header-cell *matHeaderCellDef>Title</th>
-          <td mat-cell *matCellDef="let note">
-            @if (editingId === note.id) {
-              <mat-form-field appearance="fill" class="inline-field">
-                <input matInput [(ngModel)]="editTitle" />
-              </mat-form-field>
-            } @else {
-              <span class="note-title">{{ note.title }}</span>
-            }
-          </td>
-        </ng-container>
+    <mat-accordion class="notes-accordion" multi>
+      @for (note of notes; track note.id) {
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              @if (editingId === note.id) {
+                <mat-form-field appearance="fill" class="inline-field" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                  <input matInput [(ngModel)]="editTitle" (click)="$event.stopPropagation()" />
+                </mat-form-field>
+              } @else {
+                <span class="note-title">{{ note.title }}</span>
+              }
+            </mat-panel-title>
+            <mat-panel-description>
+              {{ note.updatedAt | date:'shortDate' }}
+            </mat-panel-description>
+          </mat-expansion-panel-header>
 
-        <!-- Content Column -->
-        <ng-container matColumnDef="content">
-          <th mat-header-cell *matHeaderCellDef>Note</th>
-          <td mat-cell *matCellDef="let note">
-            @if (editingId === note.id) {
-              <mat-form-field appearance="fill" class="inline-field">
-                <textarea matInput [(ngModel)]="editContent" rows="2"></textarea>
-              </mat-form-field>
-            } @else {
-              <span class="note-content">{{ note.content }}</span>
-            }
-          </td>
-        </ng-container>
+          @if (editingId === note.id) {
+            <mat-form-field appearance="fill" class="inline-field">
+              <mat-label>Note</mat-label>
+              <textarea matInput [(ngModel)]="editContent" rows="3"></textarea>
+            </mat-form-field>
+          } @else {
+            <p class="note-content">{{ note.content }}</p>
+          }
 
-        <!-- Date Column -->
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Updated</th>
-          <td mat-cell *matCellDef="let note">
-            {{ note.updatedAt | date:'shortDate' }}
-          </td>
-        </ng-container>
-
-        <!-- Actions Column -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let note">
+          <mat-action-row>
             @if (editingId === note.id) {
-              <button mat-icon-button color="primary" (click)="saveEdit()" title="Save">
-                <mat-icon>save</mat-icon>
+              <button mat-button color="primary" (click)="saveEdit()">
+                <mat-icon>save</mat-icon> Save
               </button>
-              <button mat-icon-button (click)="cancelEdit()" title="Cancel">
-                <mat-icon>close</mat-icon>
+              <button mat-button (click)="cancelEdit()">
+                <mat-icon>close</mat-icon> Cancel
               </button>
             } @else {
-              <button mat-icon-button (click)="startEdit(note)" title="Edit">
-                <mat-icon>edit</mat-icon>
+              <button mat-button (click)="startEdit(note)">
+                <mat-icon>edit</mat-icon> Edit
               </button>
-              <button mat-icon-button color="warn" (click)="deleteNote(note.id)" title="Delete">
-                <mat-icon>delete</mat-icon>
+              <button mat-button color="warn" (click)="deleteNote(note.id)">
+                <mat-icon>delete</mat-icon> Delete
               </button>
             }
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-    </div>
+          </mat-action-row>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
   }
 </div>

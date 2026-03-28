@@ -1,5 +1,5 @@
 import { Component, ViewChild, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,16 +29,21 @@ import { AuthService } from './auth.service';
 export class App {
   @ViewChild('sidenav') sidenav!: MatSidenav;
   readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   closeSidenav() {
     this.sidenav.close();
   }
 
-  signIn() {
-    this.auth.signInWithGoogle();
+  async signIn() {
+    await this.auth.signInWithGoogle();
+    if (this.router.url === '/logged-out') {
+      this.router.navigate(['/']);
+    }
   }
 
-  signOut() {
-    this.auth.signOut();
+  async signOut() {
+    await this.auth.signOut();
+    this.router.navigate(['/logged-out']);
   }
 }

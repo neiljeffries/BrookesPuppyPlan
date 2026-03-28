@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotesService, Note } from './notes.service';
@@ -20,7 +20,7 @@ import { NotesService, Note } from './notes.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatTableModule,
+    MatExpansionModule,
     DatePipe,
   ],
   templateUrl: './notes.html',
@@ -32,7 +32,6 @@ export class Notes implements OnInit, OnDestroy {
   private sub!: Subscription;
 
   notes: Note[] = [];
-  displayedColumns = ['title', 'content', 'date', 'actions'];
   newTitle = '';
   newContent = '';
 
