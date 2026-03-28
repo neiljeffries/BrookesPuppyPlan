@@ -34,15 +34,8 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Import / Export -->
+  <!-- Actions -->
   <div class="io-bar">
-    <button mat-flat-button (click)="exportNotes()" [disabled]="notes.length === 0">
-      <mat-icon>download</mat-icon> Export Notes
-    </button>
-    <button mat-flat-button (click)="fileInput.click()">
-      <mat-icon>upload</mat-icon> Import Notes
-    </button>
-    <input #fileInput type="file" accept=".json" hidden (change)="onImportFile($event)" />
     <span class="spacer"></span>
     @if (!confirmingDeleteAll) {
       <button mat-flat-button (click)="confirmingDeleteAll = true" [disabled]="notes.length === 0">
@@ -56,9 +49,6 @@
         </button>
         <button mat-flat-button (click)="confirmingDeleteAll = false">Cancel</button>
       </span>
-    }
-    @if (importMessage) {
-      <span class="import-msg">{{ importMessage }}</span>
     }
   </div>
 

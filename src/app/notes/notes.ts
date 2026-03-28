@@ -39,7 +39,6 @@ export class Notes implements OnInit, OnDestroy {
   editTitle = '';
   editContent = '';
 
-  importMessage = '';
   errorMessage = '';
   confirmingDeleteAll = false;
 
@@ -116,33 +115,4 @@ export class Notes implements OnInit, OnDestroy {
     }
   }
 
-  exportNotes(): void {
-    const json = this.svc.exportNotes();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'puppy-notes.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async onImportFile(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const count = await this.svc.importNotes(text);
-      this.importMessage = `Imported ${count} new note${count === 1 ? '' : 's'}.`;
-      this.cdr.detectChanges();
-    } catch {
-      this.importMessage = 'Invalid file format.';
-    }
-    setTimeout(() => {
-      this.importMessage = '';
-      this.cdr.detectChanges();
-    }, 4000);
-    input.value = '';
-  }
 }
