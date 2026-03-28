@@ -47,6 +47,29 @@
         "reveal": "always",
         "panel": "new"
       }
+    },
+    {
+      "label": "Serve App",
+      "type": "shell",
+      "command": "${workspaceFolder}/serve.bat",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "Compiling"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation (complete|failed)"
+          }
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     }
   ]
 }

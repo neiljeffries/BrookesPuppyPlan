@@ -1,0 +1,19 @@
+<section class="test-section">
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon">science</mat-icon>
+      <mat-card-title>Firebase Realtime Database Test</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading) {
+        <p class="status">Loading value from Firebase...</p>
+      } @else if (error) {
+        <p class="status error">Error: {{ error }}</p>
+      } @else {
+        <p class="result">
+          <strong>testkey</strong> = <span class="value">{{ testValue ?? 'null' }}</span>
+        </p>
+      }
+    </mat-card-content>
+  </mat-card>
+</section>
