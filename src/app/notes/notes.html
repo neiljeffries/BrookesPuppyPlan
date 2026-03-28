@@ -7,6 +7,12 @@
     <p>Keep track of everything — vet visits, training progress, favourite toys, and more.</p>
   </div>
 
+  @if (errorMessage) {
+    <div class="error-banner">
+      <mat-icon>error</mat-icon> {{ errorMessage }}
+    </div>
+  }
+
   <!-- New Note Form -->
   <mat-card class="new-note-card">
     <mat-card-content>

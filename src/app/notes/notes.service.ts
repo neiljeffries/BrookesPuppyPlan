@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { db, ref, onValue, push, set, update, remove } from '../firebase';
 
 export interface Note {
   id: string;
@@ -8,81 +10,82 @@ export interface Note {
   updatedAt: string;
 }
 
-const STORAGE_KEY = 'brookes_puppy_notes';
+const NOTES_PATH = 'notes';
 
 @Injectable({ providedIn: 'root' })
 export class NotesService {
-  private notes: Note[] = [];
+  private readonly notesSubject = new BehaviorSubject<Note[]>([]);
+  readonly notes$ = this.notesSubject.asObservable();
 
   constructor() {
-    this.load();
+    onValue(ref(db, NOTES_PATH), (snapshot) => {
+      const val = snapshot.val();
+      if (!val) {
+        this.notesSubject.next([]);
+        return;
+      }
+      const notes: Note[] = Object.entries(val).map(([key, data]: [string, any]) => ({
+        id: key,
+        title: data.title,
+        content: data.content,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      }));
+      notes.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      this.notesSubject.next(notes);
+    });
   }
 
-  private load(): void {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    this.notes = raw ? JSON.parse(raw) : [];
+  get notes(): Note[] {
+    return this.notesSubject.value;
   }
 
-  private save(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.notes));
-  }
-
-  getAll(): Note[] {
-    return [...this.notes];
-  }
-
-  add(title: string, content: string): Note {
+  async add(title: string, content: string): Promise<void> {
     const now = new Date().toISOString();
-    const note: Note = {
-      id: crypto.randomUUID(),
+    const newRef = push(ref(db, NOTES_PATH));
+    await set(newRef, { title, content, createdAt: now, updatedAt: now });
+  }
+
+  async updateNote(id: string, title: string, content: string): Promise<void> {
+    await update(ref(db, `${NOTES_PATH}/${id}`), {
       title,
       content,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.notes.unshift(note);
-    this.save();
-    return note;
+      updatedAt: new Date().toISOString(),
+    });
   }
 
-  update(id: string, title: string, content: string): void {
-    const note = this.notes.find(n => n.id === id);
-    if (note) {
-      note.title = title;
-      note.content = content;
-      note.updatedAt = new Date().toISOString();
-      this.save();
-    }
+  async delete(id: string): Promise<void> {
+    await remove(ref(db, `${NOTES_PATH}/${id}`));
   }
 
-  delete(id: string): void {
-    this.notes = this.notes.filter(n => n.id !== id);
-    this.save();
-  }
-
-  deleteAll(): void {
-    this.notes = [];
-    this.save();
+  async deleteAll(): Promise<void> {
+    await remove(ref(db, NOTES_PATH));
   }
 
   exportNotes(): string {
     return JSON.stringify(this.notes, null, 2);
   }
 
-  importNotes(json: string): number {
+  async importNotes(json: string): Promise<number> {
     const imported: Note[] = JSON.parse(json);
     if (!Array.isArray(imported)) throw new Error('Invalid format');
+    const existing = new Set(this.notes.map(n => n.id));
     let count = 0;
     for (const note of imported) {
-      if (note.id && note.title && note.content) {
-        const exists = this.notes.find(n => n.id === note.id);
-        if (!exists) {
-          this.notes.unshift(note);
+      if (note.title && note.content) {
+        if (!existing.has(note.id)) {
+          const now = new Date().toISOString();
+          const newRef = push(ref(db, NOTES_PATH));
+          await set(newRef, {
+            title: note.title,
+            content: note.content,
+            createdAt: note.createdAt || now,
+            updatedAt: note.updatedAt || now,
+          });
           count++;
         }
       }
     }
-    this.save();
     return count;
   }
 }

@@ -14,9 +14,6 @@
       <a mat-list-item routerLink="/training" routerLinkActive="active-link" (click)="closeSidenav()">
         <mat-icon matListItemIcon>school</mat-icon> Training
       </a>
-      <a mat-list-item routerLink="/notes" routerLinkActive="active-link" (click)="closeSidenav()">
-        <mat-icon matListItemIcon>sticky_note_2</mat-icon> Notes
-      </a>
       <a mat-list-item routerLink="/contact" routerLinkActive="active-link" (click)="closeSidenav()">
         <mat-icon matListItemIcon>mail</mat-icon> Contact
       </a>
@@ -24,6 +21,9 @@
         <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
       </a>
       @if (auth.isAdmin$ | async) {
+        <a mat-list-item routerLink="/notes" routerLinkActive="active-link" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>sticky_note_2</mat-icon> Notes
+        </a>
         <a mat-list-item routerLink="/test" routerLinkActive="active-link" (click)="closeSidenav()">
           <mat-icon matListItemIcon>science</mat-icon> Test
         </a>
@@ -71,10 +71,6 @@
           <mat-icon>school</mat-icon> Training
         </a>
         <span class="bone-divider">🦴</span>
-        <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
-          <mat-icon>sticky_note_2</mat-icon> Notes
-        </a>
-        <span class="bone-divider">🦴</span>
         <a mat-button routerLink="/contact" routerLinkActive="active-link" class="nav-link">
           <mat-icon>mail</mat-icon> Contact
         </a>
@@ -83,6 +79,10 @@
           <mat-icon>live_tv</mat-icon> Dog Whisperer
         </a>
         @if (auth.isAdmin$ | async) {
+          <span class="bone-divider">🦴</span>
+          <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
+            <mat-icon>sticky_note_2</mat-icon> Notes
+          </a>
           <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/test" routerLinkActive="active-link" class="nav-link">
             <mat-icon>science</mat-icon> Test

@@ -39,6 +39,18 @@
   line-height: 1.5;
 }
 
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: #fdecea;
+  color: #b71c1c;
+  font-weight: 500;
+}
+
 /* New note card */
 .new-note-card {
   margin-bottom: 1.5rem;

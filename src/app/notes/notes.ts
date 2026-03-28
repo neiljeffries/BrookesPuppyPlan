@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { DatePipe } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { NotesService, Note } from './notes.service';
 
 @Component({
@@ -25,9 +26,10 @@ import { NotesService, Note } from './notes.service';
   templateUrl: './notes.html',
   styleUrl: './notes.css',
 })
-export class Notes {
+export class Notes implements OnInit, OnDestroy {
   private readonly svc = inject(NotesService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private sub!: Subscription;
 
   notes: Note[] = [];
   displayedColumns = ['title', 'content', 'date', 'actions'];
@@ -39,24 +41,33 @@ export class Notes {
   editContent = '';
 
   importMessage = '';
+  errorMessage = '';
   confirmingDeleteAll = false;
 
-  constructor() {
-    this.refresh();
+  ngOnInit(): void {
+    this.sub = this.svc.notes$.subscribe(notes => {
+      this.notes = notes;
+      this.cdr.detectChanges();
+    });
   }
 
-  private refresh(): void {
-    this.notes = this.svc.getAll();
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
   }
 
-  addNote(): void {
+  async addNote(): Promise<void> {
     const title = this.newTitle.trim();
     const content = this.newContent.trim();
     if (!title || !content) return;
-    this.svc.add(title, content);
-    this.newTitle = '';
-    this.newContent = '';
-    this.refresh();
+    try {
+      this.errorMessage = '';
+      await this.svc.add(title, content);
+      this.newTitle = '';
+      this.newContent = '';
+    } catch (e: any) {
+      this.errorMessage = e?.message || 'Failed to add note.';
+      this.cdr.detectChanges();
+    }
   }
 
   startEdit(note: Note): void {
@@ -65,11 +76,16 @@ export class Notes {
     this.editContent = note.content;
   }
 
-  saveEdit(): void {
+  async saveEdit(): Promise<void> {
     if (!this.editingId) return;
-    this.svc.update(this.editingId, this.editTitle.trim(), this.editContent.trim());
-    this.cancelEdit();
-    this.refresh();
+    try {
+      this.errorMessage = '';
+      await this.svc.updateNote(this.editingId, this.editTitle.trim(), this.editContent.trim());
+      this.cancelEdit();
+    } catch (e: any) {
+      this.errorMessage = e?.message || 'Failed to save edit.';
+      this.cdr.detectChanges();
+    }
   }
 
   cancelEdit(): void {
@@ -78,17 +94,27 @@ export class Notes {
     this.editContent = '';
   }
 
-  deleteNote(id: string): void {
-    this.svc.delete(id);
-    if (this.editingId === id) this.cancelEdit();
-    this.refresh();
+  async deleteNote(id: string): Promise<void> {
+    try {
+      this.errorMessage = '';
+      await this.svc.delete(id);
+      if (this.editingId === id) this.cancelEdit();
+    } catch (e: any) {
+      this.errorMessage = e?.message || 'Failed to delete note.';
+      this.cdr.detectChanges();
+    }
   }
 
-  deleteAllNotes(): void {
-    this.svc.deleteAll();
-    this.cancelEdit();
-    this.confirmingDeleteAll = false;
-    this.refresh();
+  async deleteAllNotes(): Promise<void> {
+    try {
+      this.errorMessage = '';
+      await this.svc.deleteAll();
+      this.cancelEdit();
+      this.confirmingDeleteAll = false;
+    } catch (e: any) {
+      this.errorMessage = e?.message || 'Failed to delete notes.';
+      this.cdr.detectChanges();
+    }
   }
 
   exportNotes(): void {
@@ -108,14 +134,16 @@ export class Notes {
     if (!file) return;
     try {
       const text = await file.text();
-      const count = this.svc.importNotes(text);
+      const count = await this.svc.importNotes(text);
       this.importMessage = `Imported ${count} new note${count === 1 ? '' : 's'}.`;
-      this.refresh();
       this.cdr.detectChanges();
     } catch {
       this.importMessage = 'Invalid file format.';
     }
-    setTimeout(() => (this.importMessage = ''), 4000);
+    setTimeout(() => {
+      this.importMessage = '';
+      this.cdr.detectChanges();
+    }, 4000);
     input.value = '';
   }
 }
