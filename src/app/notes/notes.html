@@ -34,7 +34,37 @@
           <mat-icon matPrefix>edit_note</mat-icon>
           <textarea matInput [(ngModel)]="newContent" name="content" rows="3" placeholder="Write your note..."></textarea>
         </mat-form-field>
-        <button mat-flat-button type="submit">
+
+        <mat-form-field appearance="fill">
+          <mat-label>Event Date</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="newEventDate" name="eventDate" placeholder="Pick a date" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- File upload -->
+        <div class="file-upload-area">
+          <input type="file" #fileInput hidden (change)="onFileSelected($event)" />
+          @if (!selectedFile) {
+            <button mat-stroked-button type="button" (click)="fileInput.click()">
+              <mat-icon>attach_file</mat-icon> Attach File
+            </button>
+          } @else {
+            <div class="selected-file">
+              <mat-icon>description</mat-icon>
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <button mat-icon-button type="button" (click)="removeSelectedFile()" aria-label="Remove file">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        @if (uploading) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <button mat-flat-button type="submit" [disabled]="uploading">
           <mat-icon>add</mat-icon> Add Note
         </button>
       </form>
@@ -60,59 +90,83 @@
     }
   </div>
 
-  <!-- Notes Accordion -->
+  <!-- Notes Cards -->
   @if (notes.length === 0) {
     <div class="empty-state">
       <mat-icon>note_add</mat-icon>
       <p>No notes yet — add your first one above!</p>
     </div>
   } @else {
-    <mat-accordion class="notes-accordion" multi>
+    <div class="notes-grid">
       @for (note of notes; track note.id) {
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              @if (editingId === note.id) {
-                <mat-form-field appearance="fill" class="inline-field" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-                  <input matInput [(ngModel)]="editTitle" (click)="$event.stopPropagation()" />
-                </mat-form-field>
-              } @else {
-                <span class="note-title">{{ note.title }}</span>
-              }
-            </mat-panel-title>
-            <mat-panel-description>
-              {{ note.updatedAt | date:'shortDate' }}
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-
+        <mat-card class="note-card">
           @if (editingId === note.id) {
-            <mat-form-field appearance="fill" class="inline-field">
-              <mat-label>Note</mat-label>
-              <textarea matInput [(ngModel)]="editContent" rows="3"></textarea>
-            </mat-form-field>
-          } @else {
-            <p class="note-content">{{ note.content }}</p>
-          }
-
-          <mat-action-row>
-            @if (editingId === note.id) {
-              <button mat-button color="primary" (click)="saveEdit()">
+            <mat-card-content>
+              <mat-form-field appearance="fill" class="inline-field">
+                <mat-label>Title</mat-label>
+                <input matInput [(ngModel)]="editTitle" />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="inline-field">
+                <mat-label>Note</mat-label>
+                <textarea matInput [(ngModel)]="editContent" rows="3"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="inline-field">
+                <mat-label>Event Date</mat-label>
+                <input matInput [matDatepicker]="editPicker" [(ngModel)]="editEventDate" />
+                <mat-datepicker-toggle matIconSuffix [for]="editPicker"></mat-datepicker-toggle>
+                <mat-datepicker #editPicker></mat-datepicker>
+              </mat-form-field>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="saveEdit()">
                 <mat-icon>save</mat-icon> Save
               </button>
               <button mat-button (click)="cancelEdit()">
                 <mat-icon>close</mat-icon> Cancel
               </button>
-            } @else {
+            </mat-card-actions>
+          } @else {
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="note-card-icon">sticky_note_2</mat-icon>
+              <mat-card-title>{{ note.title }}</mat-card-title>
+              <mat-card-subtitle>
+                @if (note.eventDate) {
+                  <mat-icon class="subtitle-icon">event</mat-icon> {{ note.eventDate | date:'mediumDate' }} &nbsp;·&nbsp;
+                }
+                Updated {{ note.updatedAt | date:'shortDate' }}
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="note-content">{{ note.content }}</p>
+
+              @if (note.file) {
+                <div class="note-attachment">
+                  @if (isImage(note.file.name)) {
+                    <a [href]="note.file.url" target="_blank" rel="noopener">
+                      <img [src]="note.file.url" [alt]="note.file.name" class="attachment-preview" />
+                    </a>
+                  } @else {
+                    <a [href]="note.file.url" target="_blank" rel="noopener" class="attachment-link">
+                      <mat-icon>attachment</mat-icon> {{ note.file.name }}
+                    </a>
+                  }
+                  <button mat-icon-button (click)="removeNoteFile(note)" aria-label="Remove attachment" class="remove-attachment-btn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              }
+            </mat-card-content>
+            <mat-card-actions align="end">
               <button mat-button (click)="startEdit(note)">
                 <mat-icon>edit</mat-icon> Edit
               </button>
               <button mat-button color="warn" (click)="deleteNote(note.id)">
                 <mat-icon>delete</mat-icon> Delete
               </button>
-            }
-          </mat-action-row>
-        </mat-expansion-panel>
+            </mat-card-actions>
+          }
+        </mat-card>
       }
-    </mat-accordion>
+    </div>
   }
 </div>
