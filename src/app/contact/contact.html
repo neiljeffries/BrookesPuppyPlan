@@ -7,32 +7,63 @@
     <p>Have questions about raising your Yorkshire Terrier? We'd love to hear from you!</p>
   </div>
 
-  <form class="contact-form">
+  @if (status() === 'success') {
+    <div class="status-banner success-banner">
+      <mat-icon>check_circle</mat-icon> Message sent! We'll get back to you soon.
+    </div>
+  }
+  @if (status() === 'error') {
+    <div class="status-banner error-banner">
+      <mat-icon>error</mat-icon> Something went wrong. Please try again.
+    </div>
+  }
+
+  <form class="contact-form" (ngSubmit)="send()">
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Name</mat-label>
         <mat-icon matPrefix>person</mat-icon>
-        <input matInput placeholder="Your name" />
+        <input matInput [(ngModel)]="name" name="name" placeholder="Your name" required />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Email</mat-label>
         <mat-icon matPrefix>email</mat-icon>
-        <input matInput placeholder="your@email.com" type="email" />
+        <input matInput [(ngModel)]="email" name="email" placeholder="your@email.com" type="email" required />
       </mat-form-field>
     </div>
     <mat-form-field appearance="fill">
       <mat-label>Subject</mat-label>
       <mat-icon matPrefix>topic</mat-icon>
-      <input matInput placeholder="What's this about?" />
+      <input matInput [(ngModel)]="subject" name="subject" placeholder="What's this about?" />
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Message</mat-label>
       <mat-icon matPrefix>chat</mat-icon>
-      <textarea matInput placeholder="Tell us what's on your mind..." rows="6"></textarea>
+      <textarea matInput [(ngModel)]="message" name="message" placeholder="Tell us what's on your mind..." rows="6" required></textarea>
     </mat-form-field>
-    <button mat-flat-button type="button">
+
+    <div class="recaptcha-wrapper">
+      <div #recaptchaDiv></div>
+    </div>
+    @if (status() === 'captcha') {
+      <div class="status-banner error-banner">
+        <mat-icon>smart_toy</mat-icon> Please complete the "I'm not a robot" checkbox.
+      </div>
+    }
+
+    @if (sending()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <button mat-flat-button type="submit" [disabled]="sending()">
       <mat-icon>send</mat-icon>
       Send Message
     </button>
+
+    <p class="recaptcha-notice">
+      Protected by reCAPTCHA.
+      <a href="https://policies.google.com/privacy" target="_blank">Privacy</a> &
+      <a href="https://policies.google.com/terms" target="_blank">Terms</a>.
+    </p>
   </form>
 </div>
