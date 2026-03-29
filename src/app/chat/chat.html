@@ -1,0 +1,125 @@
+<div class="chat-layout">
+  <!-- Sidebar toggle for mobile -->
+  <button mat-icon-button class="sidebar-toggle" (click)="sidebarOpen.set(!sidebarOpen())" aria-label="Toggle chat history">
+    <mat-icon>{{ sidebarOpen() ? 'close' : 'history' }}</mat-icon>
+  </button>
+
+  <!-- Sidebar -->
+  <aside class="chat-sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-header">
+      <h3>Chat History</h3>
+      <button mat-mini-fab color="primary" (click)="newChat()" matTooltip="New chat">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+    <div class="conversation-list">
+      @for (conv of conversations(); track conv.id) {
+        <div class="conversation-item"
+             [class.active]="conv.id === chatService.currentConversationId()"
+             (click)="switchChat(conv.id)">
+          <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
+          <div class="conv-info">
+            <span class="conv-title">{{ conv.title }}</span>
+            <span class="conv-date">{{ conv.updatedAt | date:'short' }}</span>
+          </div>
+          <button mat-icon-button class="conv-delete" (click)="deleteChat($event, conv.id)" matTooltip="Delete">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      } @empty {
+        <div class="no-chats">
+          <mat-icon>forum</mat-icon>
+          <p>No saved chats yet</p>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Backdrop for mobile sidebar -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="sidebarOpen.set(false)"></div>
+  }
+
+  <!-- Main chat area -->
+  <div class="chat-main">
+    <mat-card class="chat-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="chat-avatar">pets</mat-icon>
+        <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 2.5</mat-card-title>
+        <mat-card-subtitle>Ask anything about Yorkshire Terriers</mat-card-subtitle>
+        <span class="spacer"></span>
+        @if (messages.length) {
+          <button mat-icon-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        }
+      </mat-card-header>
+
+      @if (loading()) {
+        <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+      }
+
+      <mat-card-content #scrollContainer class="messages-container">
+        @if (!messages.length && !loading()) {
+          <div class="empty-state">
+            <span class="empty-paw">🐾</span>
+            <p>Hi! I'm your Yorkie expert. Ask me anything about Yorkshire Terrier care, training, grooming, health, or nutrition!</p>
+            <div class="suggestions">
+              <button mat-stroked-button (click)="userInput = 'What should I feed my Yorkie puppy?'; send()">
+                🍖 Feeding tips
+              </button>
+              <button mat-stroked-button (click)="userInput = 'How do I house train a Yorkie?'; send()">
+                🏠 House training
+              </button>
+              <button mat-stroked-button (click)="userInput = 'How often should I groom my Yorkie?'; send()">
+                ✂️ Grooming schedule
+              </button>
+            </div>
+          </div>
+        }
+
+        @for (msg of messages; track $index) {
+          <div class="message" [class.user-message]="msg.role === 'user'" [class.model-message]="msg.role === 'model'">
+            @if (msg.role === 'model') {
+              <mat-icon class="message-icon">pets</mat-icon>
+            }
+            <div class="message-bubble">{{ msg.text }}</div>
+            @if (msg.role === 'user') {
+              <mat-icon class="message-icon">person</mat-icon>
+            }
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="message model-message">
+            <mat-icon class="message-icon">pets</mat-icon>
+            <div class="message-bubble typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        }
+
+        @if (error()) {
+          <div class="error-message">
+            <mat-icon>error_outline</mat-icon>
+            {{ error() }}
+          </div>
+        }
+      </mat-card-content>
+
+      <mat-card-actions class="input-area">
+        <mat-form-field class="input-field" appearance="outline">
+          <mat-label>Ask about your Yorkie…</mat-label>
+          <input matInput
+                 [(ngModel)]="userInput"
+                 (keydown)="onKeydown($event)"
+                 [disabled]="loading()"
+                 autocomplete="off" />
+        </mat-form-field>
+        <button mat-fab color="primary" (click)="send()" [disabled]="!userInput.trim() || loading()" aria-label="Send message">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

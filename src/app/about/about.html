@@ -11,6 +11,32 @@
     </mat-card-content>
   </mat-card>
 
+  <mat-card class="winston-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="about-icon icon-amber">pets</mat-icon>
+      <mat-card-title>Winston</mat-card-title>
+      <mat-card-subtitle>Our Yorkshire Terrier</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="winston-details">
+        <div class="winston-detail">
+          <mat-icon>cake</mat-icon>
+          <div>
+            <strong>Birthday</strong>
+            <span>{{ birthday }}</span>
+          </div>
+        </div>
+        <div class="winston-detail">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Current Age</strong>
+            <span>{{ age() }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <div class="about-features">
     <mat-card>
       <mat-card-header>

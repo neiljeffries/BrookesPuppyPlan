@@ -160,9 +160,21 @@
               <button mat-button (click)="startEdit(note)">
                 <mat-icon>edit</mat-icon> Edit
               </button>
-              <button mat-button color="warn" (click)="deleteNote(note.id)">
-                <mat-icon>delete</mat-icon> Delete
-              </button>
+              @if (confirmingDeleteId === note.id) {
+                <span class="confirm-bar">
+                  <span>Delete?</span>
+                  <button mat-button color="warn" (click)="deleteNote(note.id)">
+                    <mat-icon>check</mat-icon> Yes
+                  </button>
+                  <button mat-button (click)="confirmingDeleteId = null">
+                    Cancel
+                  </button>
+                </span>
+              } @else {
+                <button mat-button color="warn" (click)="confirmingDeleteId = note.id">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+              }
             </mat-card-actions>
           }
         </mat-card>

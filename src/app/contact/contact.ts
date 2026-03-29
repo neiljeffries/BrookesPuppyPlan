@@ -94,4 +94,8 @@ export class Contact implements AfterViewInit {
       this.sending.set(false);
     }
   }
+
+  reset(): void {
+    this.status.set('idle');
+  }
 }

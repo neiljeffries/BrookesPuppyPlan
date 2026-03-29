@@ -8,17 +8,24 @@
   </div>
 
   @if (status() === 'success') {
-    <div class="status-banner success-banner">
-      <mat-icon>check_circle</mat-icon> Message sent! We'll get back to you soon.
+    <div class="success-state">
+      <div class="success-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h3>Message Sent!</h3>
+      <p>Thanks for reaching out — we'll get back to you soon.</p>
+      <button mat-stroked-button (click)="reset()">
+        <mat-icon>edit</mat-icon> Send Another Message
+      </button>
     </div>
-  }
-  @if (status() === 'error') {
-    <div class="status-banner error-banner">
-      <mat-icon>error</mat-icon> Something went wrong. Please try again.
-    </div>
-  }
+  } @else {
+    @if (status() === 'error') {
+      <div class="status-banner error-banner">
+        <mat-icon>error</mat-icon> Something went wrong. Please try again.
+      </div>
+    }
 
-  <form class="contact-form" (ngSubmit)="send()">
+    <form class="contact-form" (ngSubmit)="send()">
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Name</mat-label>
@@ -66,4 +73,5 @@
       <a href="https://policies.google.com/terms" target="_blank">Terms</a>.
     </p>
   </form>
+  }
 </div>

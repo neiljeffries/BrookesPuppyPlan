@@ -47,6 +47,7 @@ export class Notes implements OnInit, OnDestroy {
 
   errorMessage = '';
   confirmingDeleteAll = false;
+  confirmingDeleteId: string | null = null;
   showForm = false;
   selectedFile: File | null = null;
   uploading = false;
@@ -141,6 +142,7 @@ export class Notes implements OnInit, OnDestroy {
       this.errorMessage = '';
       await this.svc.delete(id);
       if (this.editingId === id) this.cancelEdit();
+      this.confirmingDeleteId = null;
     } catch (e: any) {
       this.errorMessage = e?.message || 'Failed to delete note.';
       this.cdr.detectChanges();
