@@ -41,6 +41,7 @@ export class Notes implements OnInit, OnDestroy {
 
   errorMessage = '';
   confirmingDeleteAll = false;
+  showForm = false;
 
   ngOnInit(): void {
     this.sub = this.svc.notes$.subscribe(notes => {
@@ -62,6 +63,7 @@ export class Notes implements OnInit, OnDestroy {
       await this.svc.add(title, content);
       this.newTitle = '';
       this.newContent = '';
+      this.showForm = false;
     } catch (e: any) {
       this.errorMessage = e?.message || 'Failed to add note.';
       this.cdr.detectChanges();

@@ -62,6 +62,10 @@
 }
 
 /* New note card */
+.toggle-form-btn {
+  margin-bottom: 1rem;
+}
+
 .new-note-card {
   margin-bottom: 1.5rem;
 }

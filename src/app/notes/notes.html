@@ -13,7 +13,14 @@
     </div>
   }
 
+  <!-- Toggle button -->
+  <button mat-flat-button class="toggle-form-btn" (click)="showForm = !showForm">
+    <mat-icon>{{ showForm ? 'close' : 'add' }}</mat-icon>
+    {{ showForm ? 'Cancel' : 'New Note' }}
+  </button>
+
   <!-- New Note Form -->
+  @if (showForm) {
   <mat-card class="new-note-card">
     <mat-card-content>
       <form class="note-form" (ngSubmit)="addNote()">
@@ -33,6 +40,7 @@
       </form>
     </mat-card-content>
   </mat-card>
+  }
 
   <!-- Actions -->
   <div class="io-bar">
