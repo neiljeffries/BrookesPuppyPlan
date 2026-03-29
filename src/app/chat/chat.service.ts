@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firebaseApp, db, ref, get, set, update, push, remove } from '../firebase';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
-import type { ChatSession, GenerativeModel } from 'firebase/ai';
+import type { ChatSession, GenerativeModel, AI } from 'firebase/ai';
 import { AuthService } from '../auth.service';
 
 const SYSTEM_INSTRUCTION = () => `Today's date is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
@@ -57,24 +57,66 @@ export interface ConversationSummary {
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly authService = inject(AuthService);
-  private readonly model: GenerativeModel;
+  private readonly ai: AI;
+  private model: GenerativeModel;
   private chat: ChatSession | null = null;
 
   readonly messages = signal<ChatMessage[]>([]);
   readonly conversations = signal<ConversationSummary[]>([]);
   readonly currentConversationId = signal<string | null>(null);
+  readonly customInstruction = signal<string>('');
 
   constructor() {
-    const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
-    this.model = getGenerativeModel(ai, {
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_INSTRUCTION(),
-    });
+    this.ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
+    this.model = this.buildModel('');
     this.startNewChat([]);
   }
 
   private get uid(): string | null {
     return this.authService.user?.uid ?? null;
+  }
+
+  private buildModel(extra: string): GenerativeModel {
+    const base = SYSTEM_INSTRUCTION();
+    const instruction = extra ? `${base}\n\n## Additional Instructions\n\n${extra}` : base;
+    return getGenerativeModel(this.ai, {
+      model: 'gemini-2.5-flash',
+      systemInstruction: instruction,
+    });
+  }
+
+  applyCustomInstruction(instruction: string) {
+    this.customInstruction.set(instruction);
+    this.model = this.buildModel(instruction);
+    this.saveCustomInstruction(instruction);
+    // Restart current chat with new model
+    this.startNewChat(this.messages());
+  }
+
+  removeCustomInstruction() {
+    this.applyCustomInstruction('');
+  }
+
+  async loadCustomInstruction() {
+    const uid = this.uid;
+    if (!uid) return;
+    const snapshot = await get(ref(db, `settings/${uid}/customInstruction`));
+    const saved = snapshot.val();
+    if (saved) {
+      this.customInstruction.set(saved);
+      this.model = this.buildModel(saved);
+      this.startNewChat(this.messages());
+    }
+  }
+
+  private async saveCustomInstruction(instruction: string) {
+    const uid = this.uid;
+    if (!uid) return;
+    if (instruction) {
+      await set(ref(db, `settings/${uid}/customInstruction`), instruction);
+    } else {
+      await remove(ref(db, `settings/${uid}/customInstruction`));
+    }
   }
 
   private startNewChat(history: ChatMessage[]) {

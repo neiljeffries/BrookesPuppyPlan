@@ -1,8 +1,13 @@
 <div class="chat-layout">
-  <!-- Sidebar toggle for mobile -->
-  <button mat-icon-button class="sidebar-toggle" (click)="sidebarOpen.set(!sidebarOpen())" aria-label="Toggle chat history">
-    <mat-icon>{{ sidebarOpen() ? 'close' : 'history' }}</mat-icon>
-  </button>
+  <!-- Mobile floating buttons -->
+  <div class="mobile-fabs">
+    <button mat-icon-button class="sidebar-toggle" (click)="sidebarOpen.set(!sidebarOpen())" aria-label="Toggle chat history">
+      <mat-icon>{{ sidebarOpen() ? 'close' : 'history' }}</mat-icon>
+    </button>
+    <button mat-icon-button class="new-chat-toggle" (click)="newChat()" aria-label="New chat" matTooltip="New chat">
+      <mat-icon>add_comment</mat-icon>
+    </button>
+  </div>
 
   <!-- Sidebar -->
   <aside class="chat-sidebar" [class.open]="sidebarOpen()">
@@ -48,12 +53,44 @@
         <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 2.5</mat-card-title>
         <mat-card-subtitle>Ask anything about Yorkshire Terriers</mat-card-subtitle>
         <span class="spacer"></span>
+        <button mat-icon-button (click)="importOpen.set(!importOpen())" matTooltip="Import instructions" aria-label="Import custom instructions">
+          <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
+        </button>
         @if (messages.length) {
           <button mat-icon-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">
             <mat-icon>delete_outline</mat-icon>
           </button>
         }
       </mat-card-header>
+
+      <!-- Import instructions panel -->
+      @if (importOpen()) {
+        <div class="import-panel">
+          @if (customInstruction()) {
+            <div class="active-instruction">
+              <mat-icon>check_circle</mat-icon>
+              <span class="instruction-preview">{{ customInstruction().substring(0, 80) }}{{ customInstruction().length > 80 ? '…' : '' }}</span>
+              <button mat-icon-button (click)="removeInstruction()" matTooltip="Remove custom instructions" class="remove-instruction">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+          <p class="import-hint">Paste instructions or upload a .md / .txt file to customize the agent's behavior.</p>
+          <mat-form-field appearance="outline" class="import-textarea-field">
+            <mat-label>Paste instructions…</mat-label>
+            <textarea matInput [(ngModel)]="importText" rows="5" class="import-textarea"></textarea>
+          </mat-form-field>
+          <div class="import-actions">
+            <button mat-stroked-button (click)="fileInput.click()">
+              <mat-icon>attach_file</mat-icon> Upload file
+            </button>
+            <input #fileInput type="file" accept=".md,.txt,.markdown" hidden (change)="onFileSelected($event)" />
+            <button mat-flat-button color="primary" [disabled]="!importText.trim()" (click)="applyImport()">
+              <mat-icon>check</mat-icon> Apply
+            </button>
+          </div>
+        </div>
+      }
 
       @if (loading()) {
         <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>

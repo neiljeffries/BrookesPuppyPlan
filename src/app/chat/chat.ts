@@ -28,20 +28,25 @@ import { ChatService } from './chat.service';
 })
 export class Chat implements OnInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLElement>;
+  @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
   readonly chatService = inject(ChatService);
   userInput = '';
   loading = signal(false);
   error = signal('');
   sidebarOpen = signal(false);
+  importOpen = signal(false);
+  importText = '';
 
   get messages() {
     return this.chatService.messages();
   }
 
   conversations = this.chatService.conversations;
+  customInstruction = this.chatService.customInstruction;
 
   ngOnInit() {
     this.chatService.loadConversations();
+    this.chatService.loadCustomInstruction();
   }
 
   async send() {
@@ -93,6 +98,31 @@ export class Chat implements OnInit {
   deleteChat(event: Event, id: string) {
     event.stopPropagation();
     this.chatService.deleteConversation(id);
+  }
+
+  applyImport() {
+    const text = this.importText.trim();
+    if (!text) return;
+    this.chatService.applyCustomInstruction(text);
+    this.importText = '';
+    this.importOpen.set(false);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.importText = reader.result as string;
+    };
+    reader.readAsText(file);
+    input.value = '';
+  }
+
+  removeInstruction() {
+    this.chatService.removeCustomInstruction();
   }
 
   onKeydown(event: KeyboardEvent) {

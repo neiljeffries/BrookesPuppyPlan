@@ -14,13 +14,13 @@
   justify-content: center;
 }
 
-/* Sidebar toggle (mobile only) */
-.sidebar-toggle {
+/* Mobile floating buttons (hidden on desktop) */
+.mobile-fabs {
   display: none;
-  position: fixed;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  z-index: 101;
+}
+
+.sidebar-toggle,
+.new-chat-toggle {
   background: var(--mat-sys-primary, #039be5);
   color: white;
 }
@@ -363,8 +363,14 @@
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
-  .sidebar-toggle {
+  .mobile-fabs {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 101;
   }
 
   .chat-sidebar {
@@ -411,4 +417,76 @@
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* Import instructions panel */
+.import-panel {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:host-context(.dark-theme) .import-panel {
+  border-bottom-color: var(--mat-sys-outline-variant, #444);
+}
+
+.import-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.import-textarea-field {
+  width: 100%;
+}
+
+.import-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.active-instruction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--mat-sys-primary-container, #d1eaff);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+:host-context(.dark-theme) .active-instruction {
+  background: var(--mat-sys-primary-container, #004a77);
+}
+
+.active-instruction mat-icon:first-child {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--mat-sys-primary, #039be5);
+  flex-shrink: 0;
+}
+
+.instruction-preview {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-instruction {
+  flex-shrink: 0;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.remove-instruction mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }

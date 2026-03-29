@@ -9,7 +9,7 @@ export const routes: Routes = [
   { path: 'about', loadComponent: () => import('./about/about').then(m => m.About), canActivate: [authGuard] },
   { path: 'training', loadComponent: () => import('./training/training').then(m => m.Training), canActivate: [authGuard] },
   { path: 'notes', loadComponent: () => import('./notes/notes').then(m => m.Notes), canActivate: [adminGuard] },
-  { path: 'chat', loadComponent: () => import('./chat/chat').then(m => m.Chat), canActivate: [authGuard] },
+  { path: 'chat', loadComponent: () => import('./chat/chat').then(m => m.Chat), canActivate: [adminGuard] },
   { path: 'contact', loadComponent: () => import('./contact/contact').then(m => m.Contact), canActivate: [authGuard] },
   { path: 'livestream', loadComponent: () => import('./livestream/livestream').then(m => m.Livestream), canActivate: [authGuard] },
   { path: 'test', loadComponent: () => import('./test/test').then(m => m.Test), canActivate: [adminGuard] },
