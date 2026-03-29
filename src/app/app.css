@@ -13,6 +13,11 @@
   box-shadow: 0 2px 8px rgba(3, 155, 229, 0.3);
 }
 
+:host-context(.dark-theme) .toolbar {
+  background: linear-gradient(135deg, #01579b 0%, #0277bd 40%, #0288d1 70%, #039be5 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
 .toolbar a {
   color: white;
 }
@@ -190,6 +195,10 @@
   background: linear-gradient(180deg, #e1f5fe 0%, #fff 30%);
 }
 
+:host-context(.dark-theme) .mobile-sidenav {
+  background: var(--mat-sys-surface-container);
+}
+
 .sidenav-header {
   display: flex;
   align-items: center;
@@ -202,6 +211,12 @@
   background: linear-gradient(135deg, #e1f5fe, #b3e5fc);
 }
 
+:host-context(.dark-theme) .sidenav-header {
+  border-bottom-color: #0277bd;
+  color: #64b5f6;
+  background: linear-gradient(135deg, #0d2137, #0a1929);
+}
+
 .sidenav-paw {
   font-size: 1.6rem;
   animation: wiggle 2.5s ease-in-out infinite;
@@ -211,6 +226,18 @@
   background: rgba(3, 155, 229, 0.1) !important;
   color: #0277bd;
   font-weight: 500;
+}
+
+:host-context(.dark-theme) .mobile-sidenav .active-link {
+  background: rgba(100, 181, 246, 0.15) !important;
+  color: #64b5f6;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  color: white;
+  position: relative;
+  z-index: 2;
 }
 
 /* ===== Mobile breakpoint (768px and below) ===== */
@@ -281,7 +308,7 @@
 }
 
 .user-menu-header small {
-  color: #666;
+  color: var(--mat-sys-on-surface-variant, #666);
 }
 
 /* Sidenav user info */

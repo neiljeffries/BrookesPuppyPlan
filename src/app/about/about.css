@@ -21,7 +21,7 @@
 .about-container > mat-card mat-card-content p {
   margin-top: 0.75rem;
   line-height: 1.7;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .about-features {
@@ -34,8 +34,14 @@
 .about-features mat-card-content p {
   margin-top: 0.5rem;
   line-height: 1.6;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
+
+/* Dark mode icon overrides */
+:host-context(.dark-theme) .icon-green  { background: #1b3a1e; color: #66bb6a; }
+:host-context(.dark-theme) .icon-blue   { background: #0d2137; color: #64b5f6; }
+:host-context(.dark-theme) .icon-purple { background: #2a1230; color: #ce93d8; }
+:host-context(.dark-theme) .icon-amber  { background: #3d2e00; color: #ffd54f; }
 
 /* ===== Mobile responsive ===== */
 @media (max-width: 768px) {

@@ -32,6 +32,10 @@
         </a>
       }
       <mat-divider></mat-divider>
+      <a mat-list-item (click)="theme.toggle()">
+        <mat-icon matListItemIcon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        {{ theme.isDark() ? 'Light Mode' : 'Dark Mode' }}
+      </a>
       @if (auth.user$ | async; as user) {
         <div class="sidenav-user">
           <img [src]="user.photoURL" [alt]="user.displayName" class="sidenav-avatar" referrerpolicy="no-referrer" />
@@ -94,6 +98,9 @@
         }
       </nav>
       <div class="auth-section">
+        <button mat-icon-button (click)="theme.toggle()" [matTooltip]="theme.isDark() ? 'Light mode' : 'Dark mode'" class="theme-toggle" aria-label="Toggle dark mode">
+          <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
         @if (auth.user$ | async; as user) {
           <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-button" aria-label="User menu">
             <img [src]="user.photoURL" [alt]="user.displayName" class="toolbar-avatar" referrerpolicy="no-referrer" />

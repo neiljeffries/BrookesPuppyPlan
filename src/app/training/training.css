@@ -20,6 +20,11 @@
   margin-bottom: 0.75rem;
 }
 
+:host-context(.dark-theme) .training-header .header-icon {
+  background: #1a1d3a;
+  color: #9fa8da;
+}
+
 .training-header .header-icon mat-icon {
   font-size: 28px;
   width: 28px;
@@ -33,7 +38,7 @@
 }
 
 .training-header p {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
   margin: 0;
 }
 
@@ -105,6 +110,16 @@
 .icon-pink    { background: #fce4ec; color: #c2185b; }
 .icon-indigo  { background: #e8eaf6; color: #283593; }
 
+:host-context(.dark-theme) .icon-green   { background: #1b3a1e; color: #66bb6a; }
+:host-context(.dark-theme) .icon-blue    { background: #0d2137; color: #64b5f6; }
+:host-context(.dark-theme) .icon-purple  { background: #2a1230; color: #ce93d8; }
+:host-context(.dark-theme) .icon-orange  { background: #3d2500; color: #ffb74d; }
+:host-context(.dark-theme) .icon-red     { background: #3b1020; color: #ef9a9a; }
+:host-context(.dark-theme) .icon-teal    { background: #0d2926; color: #80cbc4; }
+:host-context(.dark-theme) .icon-amber   { background: #3d2e00; color: #ffd54f; }
+:host-context(.dark-theme) .icon-pink    { background: #3b1020; color: #f48fb1; }
+:host-context(.dark-theme) .icon-indigo  { background: #1a1d3a; color: #9fa8da; }
+
 /* Philosophy card */
 .philosophy-card {
   margin-bottom: 1.5rem;
@@ -113,7 +128,7 @@
 .philosophy-card mat-card-content p {
   margin-top: 0.75rem;
   line-height: 1.7;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .philosophy-list {
@@ -133,14 +148,14 @@
 .methods-grid mat-card-content p {
   margin-top: 0.5rem;
   line-height: 1.7;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .methods-grid mat-card-content ul {
   margin: 0.75rem 0 0;
   padding-left: 1.25rem;
   line-height: 1.8;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 /* Section heading */
@@ -199,7 +214,7 @@
 .step mat-card-content p {
   margin-top: 0.5rem;
   line-height: 1.7;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 /* Quick reference card */
@@ -212,7 +227,7 @@
   padding-left: 1rem;
   border-left: 3px solid var(--mat-sys-primary, #1565c0);
   font-style: italic;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--mat-sys-on-surface-variant);
   line-height: 1.7;
 }
 
@@ -297,7 +312,7 @@
 .priority-intro {
   margin: 0.5rem 0 1rem;
   line-height: 1.7;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .priority-list {
@@ -329,7 +344,7 @@
 .priority-item p {
   margin: 0.25rem 0 0;
   line-height: 1.65;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .priority-badge {
@@ -350,6 +365,11 @@
 .badge-high     { background: #fff3e0; color: #e65100; }
 .badge-medium   { background: #e3f2fd; color: #1565c0; }
 .badge-ongoing  { background: #e8f5e9; color: #2e7d32; }
+
+:host-context(.dark-theme) .badge-critical { background: #3b1020; color: #ef9a9a; }
+:host-context(.dark-theme) .badge-high     { background: #3d2500; color: #ffb74d; }
+:host-context(.dark-theme) .badge-medium   { background: #0d2137; color: #64b5f6; }
+:host-context(.dark-theme) .badge-ongoing  { background: #1b3a1e; color: #66bb6a; }
 
 @media (max-width: 600px) {
   .priority-item {

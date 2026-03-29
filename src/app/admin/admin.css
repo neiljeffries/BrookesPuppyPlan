@@ -12,7 +12,7 @@
 
 .status {
   font-size: 1rem;
-  color: #666;
+  color: var(--mat-sys-on-surface-variant, #666);
   margin-top: 1rem;
 }
 
@@ -48,4 +48,14 @@
 .role-admin {
   background: #ffcdd2;
   color: #c62828;
+}
+
+:host-context(.dark-theme) .role-badge {
+  background: #333;
+  color: #bbb;
+}
+
+:host-context(.dark-theme) .role-admin {
+  background: #3b1020;
+  color: #ef9a9a;
 }

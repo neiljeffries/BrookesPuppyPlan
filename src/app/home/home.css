@@ -19,7 +19,7 @@
 
 .hero p {
   font-size: 1.15rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .content-section {
@@ -68,8 +68,19 @@
 .tip-grid mat-card-content p {
   margin-top: 0.5rem;
   line-height: 1.6;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
+
+/* Dark mode icon overrides */
+:host-context(.dark-theme) .icon-green  { background: #1b3a1e; color: #66bb6a; }
+:host-context(.dark-theme) .icon-blue   { background: #0d2137; color: #64b5f6; }
+:host-context(.dark-theme) .icon-purple { background: #2a1230; color: #ce93d8; }
+:host-context(.dark-theme) .icon-orange { background: #3d2500; color: #ffb74d; }
+:host-context(.dark-theme) .icon-pink   { background: #3b1020; color: #ef9a9a; }
+:host-context(.dark-theme) .icon-red    { background: #3b1020; color: #ef9a9a; }
+:host-context(.dark-theme) .icon-teal   { background: #0d2926; color: #80cbc4; }
+:host-context(.dark-theme) .icon-amber  { background: #3d2e00; color: #ffd54f; }
+:host-context(.dark-theme) .icon-indigo { background: #1a1d3a; color: #9fa8da; }
 
 /* ===== Mobile responsive ===== */
 @media (max-width: 768px) {
