@@ -11,6 +11,9 @@ export const adminGuard: CanActivateFn = () => {
     filter((ready): ready is true => ready),
     take(1),
     map(() => {
+      if (!authService.isLoggedIn) {
+        return router.createUrlTree(['/login-required']);
+      }
       if (authService.isAdmin) {
         return true;
       }
