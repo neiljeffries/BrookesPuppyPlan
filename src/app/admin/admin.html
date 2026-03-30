@@ -34,11 +34,15 @@
           </ng-container>
 
           <ng-container matColumnDef="role">
-            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <th mat-header-cell *matHeaderCellDef>Roles</th>
             <td mat-cell *matCellDef="let user">
-              <span class="role-badge" [class.role-admin]="user.role === 'admin'">
-                {{ user.role ?? 'member' }}
-              </span>
+              @for (role of activeRoles(user); track role) {
+                <span class="role-badge" [class.role-admin]="role === 'admin'" [class.role-user]="role === 'user'">
+                  {{ role }}
+                </span>
+              } @empty {
+                <span class="role-badge role-none">none</span>
+              }
             </td>
           </ng-container>
 
@@ -47,10 +51,71 @@
             <td mat-cell *matCellDef="let user">{{ user.lastLogin | date:'medium' }}</td>
           </ng-container>
 
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              <button mat-icon-button [matMenuTriggerFor]="roleMenu" matTooltip="Manage role" aria-label="Manage role">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #roleMenu="matMenu">
+                @for (role of availableRoles; track role) {
+                  @if (hasRole(user, role)) {
+                    <button mat-menu-item (click)="removeRole(user.uid, role)">
+                      <mat-icon>check_box</mat-icon> {{ role }}
+                    </button>
+                  } @else {
+                    <button mat-menu-item (click)="addRole(user.uid, role)">
+                      <mat-icon>check_box_outline_blank</mat-icon> {{ role }}
+                    </button>
+                  }
+                }
+              </mat-menu>
+            </td>
+          </ng-container>
+
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
       }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="roles-reference">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon">vpn_key</mat-icon>
+      <mat-card-title>Role Permissions</mat-card-title>
+      <mat-card-subtitle>Which features each role unlocks</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="role-group">
+        <h3><span class="role-badge role-admin">admin</span></h3>
+        <ul class="feature-list">
+          <li><mat-icon>smart_toy</mat-icon> Yorkie Chat</li>
+          <li><mat-icon>sticky_note_2</mat-icon> Notes</li>
+          <li><mat-icon>admin_panel_settings</mat-icon> Admin Panel</li>
+        </ul>
+      </div>
+      <div class="role-group">
+        <h3><span class="role-badge role-user">user</span></h3>
+        <ul class="feature-list">
+          <li><mat-icon>smart_toy</mat-icon> Yorkie Chat</li>
+        </ul>
+      </div>
+      <div class="role-group">
+        <h3><span class="role-badge">logged in (no role)</span></h3>
+        <ul class="feature-list">
+          <li><mat-icon>school</mat-icon> Training</li>
+          <li><mat-icon>live_tv</mat-icon> Dog Whisperer</li>
+        </ul>
+      </div>
+      <div class="role-group">
+        <h3><span class="role-badge role-none">not logged in</span></h3>
+        <ul class="feature-list">
+          <li><mat-icon>home</mat-icon> Home</li>
+          <li><mat-icon>info</mat-icon> About</li>
+          <li><mat-icon>mail</mat-icon> Contact</li>
+        </ul>
+      </div>
     </mat-card-content>
   </mat-card>
 </section>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { firebaseApp, db, ref, update, onValue } from './firebase';
+import { firebaseApp, db, ref, update, get } from './firebase';
 import { BehaviorSubject, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -8,21 +8,22 @@ export class AuthService {
   private readonly auth = getAuth(firebaseApp);
   private readonly userSubject = new BehaviorSubject<User | null>(null);
   private readonly readySubject = new BehaviorSubject<boolean>(false);
-  private readonly roleSubject = new BehaviorSubject<string | null>(null);
+  private readonly rolesSubject = new BehaviorSubject<Record<string, boolean>>({});
 
   user$ = this.userSubject.asObservable();
   ready$ = this.readySubject.asObservable();
-  role$ = this.roleSubject.asObservable();
-  isAdmin$ = this.role$.pipe(map(role => role === 'admin'));
+  roles$ = this.rolesSubject.asObservable();
+  isAdmin$ = this.roles$.pipe(map(roles => roles['admin'] === true));
+  hasChatAccess$ = this.roles$.pipe(map(roles => roles['admin'] === true || roles['user'] === true));
 
   constructor() {
     onAuthStateChanged(this.auth, (user) => {
       this.userSubject.next(user);
       if (user) {
         this.saveUserProfile(user);
-        this.loadRole(user.uid);
+        this.loadRoles(user.uid);
       } else {
-        this.roleSubject.next(null);
+        this.rolesSubject.next({});
         this.readySubject.next(true);
       }
     });
@@ -37,19 +38,33 @@ export class AuthService {
     });
   }
 
-  private loadRole(uid: string): void {
-    onValue(ref(db, `users/${uid}/role`), (snapshot) => {
-      this.roleSubject.next(snapshot.val() ?? null);
-      this.readySubject.next(true);
-    }, { onlyOnce: true });
+  private async loadRoles(uid: string): Promise<void> {
+    // Try new 'roles' path first
+    const rolesSnap = await get(ref(db, `users/${uid}/roles`));
+    const rolesVal = rolesSnap.val();
+    if (rolesVal && typeof rolesVal === 'object') {
+      this.rolesSubject.next(rolesVal);
+    } else {
+      // Backward compat: migrate old 'role' string to 'roles' map
+      const roleSnap = await get(ref(db, `users/${uid}/role`));
+      const oldRole = roleSnap.val();
+      if (oldRole && typeof oldRole === 'string') {
+        const migrated = { [oldRole]: true };
+        await update(ref(db, `users/${uid}`), { roles: migrated });
+        this.rolesSubject.next(migrated);
+      } else {
+        this.rolesSubject.next({});
+      }
+    }
+    this.readySubject.next(true);
   }
 
   get user(): User | null {
     return this.userSubject.value;
   }
 
-  get role(): string | null {
-    return this.roleSubject.value;
+  get roles(): Record<string, boolean> {
+    return this.rolesSubject.value;
   }
 
   get isLoggedIn(): boolean {
@@ -57,7 +72,7 @@ export class AuthService {
   }
 
   get isAdmin(): boolean {
-    return this.roleSubject.value === 'admin';
+    return this.rolesSubject.value['admin'] === true;
   }
 
   async signInWithGoogle(): Promise<void> {

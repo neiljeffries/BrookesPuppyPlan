@@ -45,9 +45,23 @@
   color: #555;
 }
 
+.role-badge + .role-badge {
+  margin-left: 0.35rem;
+}
+
+.role-none {
+  font-style: italic;
+  opacity: 0.6;
+}
+
 .role-admin {
   background: #ffcdd2;
   color: #c62828;
+}
+
+.role-user {
+  background: #c8e6c9;
+  color: #2e7d32;
 }
 
 :host-context(.dark-theme) .role-badge {
@@ -58,4 +72,42 @@
 :host-context(.dark-theme) .role-admin {
   background: #3b1020;
   color: #ef9a9a;
+}
+
+:host-context(.dark-theme) .role-user {
+  background: #1b3b1e;
+  color: #a5d6a7;
+}
+
+.roles-reference {
+  margin-top: 1.5rem;
+}
+
+.role-group {
+  margin-bottom: 1rem;
+}
+
+.role-group h3 {
+  margin: 0 0 0.4rem;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--mat-sys-on-surface-variant, #555);
+}
+
+.feature-list mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
