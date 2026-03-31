@@ -66,7 +66,12 @@ export class Admin implements OnInit {
     await set(ref(db, `users/${uid}/roles/${role}`), true);
   }
 
+  isSelfAdminRole(uid: string, role: string): boolean {
+    return role === 'admin' && uid === this.auth.user?.uid;
+  }
+
   async removeRole(uid: string, role: string) {
+    if (this.isSelfAdminRole(uid, role)) return;
     await remove(ref(db, `users/${uid}/roles/${role}`));
   }
 }

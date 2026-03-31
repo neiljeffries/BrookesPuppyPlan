@@ -11,6 +11,7 @@ export const routes: Routes = [
   { path: 'notes', loadComponent: () => import('./notes/notes').then(m => m.Notes), canActivate: [adminGuard] },
   { path: 'chat', loadComponent: () => import('./chat/chat').then(m => m.Chat), canActivate: [adminGuard] },
   { path: 'contact', loadComponent: () => import('./contact/contact').then(m => m.Contact) },
+  { path: 'reminders', loadComponent: () => import('./reminders/reminders').then(m => m.Reminders), canActivate: [authGuard] },
   { path: 'livestream', loadComponent: () => import('./livestream/livestream').then(m => m.Livestream), canActivate: [authGuard] },
   { path: 'admin', loadComponent: () => import('./admin/admin').then(m => m.Admin), canActivate: [adminGuard] },
 ];

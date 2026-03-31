@@ -60,8 +60,11 @@
               <mat-menu #roleMenu="matMenu">
                 @for (role of availableRoles; track role) {
                   @if (hasRole(user, role)) {
-                    <button mat-menu-item (click)="removeRole(user.uid, role)">
+                    <button mat-menu-item (click)="removeRole(user.uid, role)" [disabled]="isSelfAdminRole(user.uid, role)">
                       <mat-icon>check_box</mat-icon> {{ role }}
+                      @if (isSelfAdminRole(user.uid, role)) {
+                        <span class="self-admin-hint">(you)</span>
+                      }
                     </button>
                   } @else {
                     <button mat-menu-item (click)="addRole(user.uid, role)">

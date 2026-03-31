@@ -1,0 +1,125 @@
+<section class="reminders-section">
+  <!-- Notification permission banner -->
+  @if (permissionState() !== 'granted') {
+    <mat-card class="permission-card">
+      <mat-card-content>
+        <div class="permission-prompt">
+          <mat-icon class="permission-icon">notifications_off</mat-icon>
+          <div>
+            <h3>Enable Push Notifications</h3>
+            <p>Get reminders for vet appointments, training sessions, and feeding times — even when the app is closed.</p>
+          </div>
+          @if (permissionState() === 'denied') {
+            <span class="permission-denied">Notifications are blocked. Please enable them in your browser settings.</span>
+          } @else {
+            <button mat-raised-button color="primary" (click)="enableNotifications()">
+              <mat-icon>notifications_active</mat-icon> Enable Notifications
+            </button>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Add Reminder Form -->
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon">add_alert</mat-icon>
+      <mat-card-title>New Reminder</mat-card-title>
+      <mat-card-subtitle>Schedule a notification for yourself</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="reminder-form">
+        <mat-form-field appearance="outline" class="form-full">
+          <mat-label>Title</mat-label>
+          <input matInput [(ngModel)]="title" placeholder="e.g. Vet checkup for Brooke" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-full">
+          <mat-label>Details (optional)</mat-label>
+          <input matInput [(ngModel)]="body" placeholder="e.g. Bring vaccination records" />
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="category">
+              @for (cat of categories; track cat.value) {
+                <mat-option [value]="cat.value">
+                  <mat-icon>{{ cat.icon }}</mat-icon> {{ cat.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Repeat</mat-label>
+            <mat-select [(ngModel)]="repeat">
+              @for (opt of repeatOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="form-full">
+          <mat-label>Date & Time</mat-label>
+          <input matInput type="datetime-local" [(ngModel)]="dateTime" />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="addReminder()" [disabled]="!title.trim() || !dateTime">
+          <mat-icon>alarm_add</mat-icon> Add Reminder
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Upcoming Reminders -->
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon icon-upcoming">upcoming</mat-icon>
+      <mat-card-title>Your Reminders</mat-card-title>
+      <mat-card-subtitle>{{ reminders.length }} reminder{{ reminders.length === 1 ? '' : 's' }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (reminders.length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">notification_add</mat-icon>
+          <p>No reminders yet. Add one above!</p>
+        </div>
+      } @else {
+        <div class="reminder-list">
+          @for (reminder of reminders; track reminder.id) {
+            <div class="reminder-item" [class.reminder-past]="isPast(reminder.dateTime) && reminder.repeat === 'none'" [class.reminder-sent]="reminder.sent">
+              <mat-icon class="reminder-cat-icon" [class]="'cat-' + reminder.category">
+                {{ getCategoryIcon(reminder.category) }}
+              </mat-icon>
+              <div class="reminder-info">
+                <strong>{{ reminder.title }}</strong>
+                @if (reminder.body) {
+                  <span class="reminder-body">{{ reminder.body }}</span>
+                }
+                <span class="reminder-meta">
+                  <mat-icon class="meta-icon">schedule</mat-icon>
+                  {{ reminder.dateTime | date:'medium' }}
+                  @if (reminder.repeat !== 'none') {
+                    <span class="repeat-badge">
+                      <mat-icon class="meta-icon">repeat</mat-icon> {{ reminder.repeat }}
+                    </span>
+                  }
+                  @if (reminder.sent && reminder.repeat === 'none') {
+                    <span class="sent-badge">sent</span>
+                  }
+                </span>
+              </div>
+              <button mat-icon-button color="warn" (click)="deleteReminder(reminder.id!)" matTooltip="Delete reminder">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+            <mat-divider />
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</section>

@@ -26,6 +26,9 @@
         <a mat-list-item routerLink="/livestream" routerLinkActive="active-link" (click)="closeSidenav()">
           <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
         </a>
+        <a mat-list-item routerLink="/reminders" routerLinkActive="active-link" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>notifications</mat-icon> Reminders
+        </a>
       }
       @if (auth.isAdmin$ | async) {
         <a mat-list-item routerLink="/notes" routerLinkActive="active-link" (click)="closeSidenav()">
@@ -92,6 +95,10 @@
           <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
             <mat-icon>live_tv</mat-icon> Dog Whisperer
+          </a>
+          <span class="bone-divider">🦴</span>
+          <a mat-button routerLink="/reminders" routerLinkActive="active-link" class="nav-link">
+            <mat-icon>notifications</mat-icon> Reminders
           </a>
         }
         @if (auth.isAdmin$ | async) {

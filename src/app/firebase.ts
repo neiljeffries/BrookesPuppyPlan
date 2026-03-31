@@ -18,8 +18,8 @@ const firebaseConfig = {
 export const firebaseApp = initializeApp(firebaseConfig);
 
 // Enable App Check for Firebase AI
-if (typeof window !== 'undefined' && location.hostname === 'localhost') {
-  (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+if (globalThis.window !== undefined && location.hostname === 'localhost') {
+  (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 }
 initializeAppCheck(firebaseApp, {
   provider: new ReCaptchaV3Provider('6Lc6iJwsAAAAAAU_Ig9_YNqedfZ0Tk_UiDP_Pblk'),
@@ -28,3 +28,4 @@ initializeAppCheck(firebaseApp, {
 
 export const db = getDatabase(firebaseApp);
 export const storage = getStorage(firebaseApp);
+export { getMessaging, getToken, onMessage } from "firebase/messaging";
