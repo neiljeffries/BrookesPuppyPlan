@@ -84,7 +84,7 @@
         @if (auth.hasChatAccess$ | async) {
           <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/chat" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>smart_toy</mat-icon> Yorkie Chat*
+            <mat-icon>smart_toy</mat-icon> Yorkie AI
           </a>
         }
         <span class="bone-divider">🦴</span>
@@ -104,11 +104,11 @@
         @if (auth.isAdmin$ | async) {
           <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>sticky_note_2</mat-icon> Notes*
+            <mat-icon>sticky_note_2</mat-icon> Notes
           </a>
           <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/admin" routerLinkActive="active-link" class="nav-link admin-link">
-            <mat-icon>admin_panel_settings</mat-icon> Admin*
+            <mat-icon>admin_panel_settings</mat-icon> Admin
           </a>
         }
       </nav>

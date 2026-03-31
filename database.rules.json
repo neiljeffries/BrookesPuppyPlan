@@ -19,8 +19,10 @@
       }
     },
     "notes": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
     },
     "chats": {
       "$uid": {
