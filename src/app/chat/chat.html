@@ -55,7 +55,7 @@
         <span class="spacer"></span>
         <button mat-stroked-button (click)="importOpen.set(!importOpen())" aria-label="Import custom instructions">
           <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
-          {{ importOpen() ? 'Close' : 'Import Agent' }}
+          <span class="import-btn-text">{{ importOpen() ? 'Close' : 'Import Agent' }}</span>
         </button>
         @if (messages.length) {
           <button mat-icon-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">

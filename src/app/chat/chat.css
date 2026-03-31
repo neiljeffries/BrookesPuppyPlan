@@ -177,6 +177,9 @@
 .chat-card mat-card-header {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  gap: 0.25rem;
 }
 
 .chat-avatar {
@@ -416,6 +419,10 @@
   .suggestions {
     flex-direction: column;
     align-items: center;
+  }
+
+  .import-btn-text {
+    display: none;
   }
 }
 

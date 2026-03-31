@@ -51,3 +51,4 @@ Thumbs.db
 
 # If public/ is used for deployment output, uncomment the next line:
 #/public/
+.playwright-mcp/
