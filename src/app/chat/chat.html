@@ -51,10 +51,11 @@
       <mat-card-header>
         <mat-icon mat-card-avatar class="chat-avatar">pets</mat-icon>
         <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 2.5</mat-card-title>
-        <mat-card-subtitle>Ask anything about Yorkshire Terriers</mat-card-subtitle>
+        <mat-card-subtitle>Select agents to customize your chat</mat-card-subtitle>
         <span class="spacer"></span>
-        <button mat-icon-button (click)="importOpen.set(!importOpen())" matTooltip="Import instructions" aria-label="Import custom instructions">
+        <button mat-stroked-button (click)="importOpen.set(!importOpen())" aria-label="Import custom instructions">
           <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
+          {{ importOpen() ? 'Close' : 'Import Agent' }}
         </button>
         @if (messages.length) {
           <button mat-icon-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">
@@ -92,6 +93,19 @@
         </div>
       }
 
+      <!-- Agent selection -->
+      <div class="agent-bar">
+        @for (agent of agents; track agent.id) {
+          <button class="agent-chip" [class.agent-active]="isAgentActive(agent.id)" (click)="toggleAgent(agent.id)" [matTooltip]="isAgentActive(agent.id) ? 'Remove ' + agent.name : 'Add ' + agent.name">
+            <mat-icon>{{ agent.icon }}</mat-icon>
+            <span>{{ agent.name }}</span>
+            @if (isAgentActive(agent.id)) {
+              <mat-icon class="chip-check">check_circle</mat-icon>
+            }
+          </button>
+        }
+      </div>
+
       @if (loading()) {
         <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
       }
@@ -100,7 +114,7 @@
         @if (!messages.length && !loading()) {
           <div class="empty-state">
             <span class="empty-paw">🐾</span>
-            <p>Hi! I'm your Yorkie expert. Ask me anything about Yorkshire Terrier care, training, grooming, health, or nutrition!</p>
+            <p>Hi! Select an agent above to get specialized advice, or just start chatting. You can also import custom instructions.</p>
           </div>
         }
 

@@ -117,3 +117,62 @@
   width: 18px;
   height: 18px;
 }
+
+/* Registration status */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.status-badge mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.status-registered {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.status-pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+:host-context(.dark-theme) .status-registered {
+  background: #1b3b1e;
+  color: #a5d6a7;
+}
+
+:host-context(.dark-theme) .status-pending {
+  background: #3e2723;
+  color: #ffcc80;
+}
+
+.approve-btn {
+  color: #2e7d32;
+}
+
+.revoke-btn {
+  color: #d32f2f;
+}
+
+.pending-filter-btn {
+  font-size: 0.85rem;
+  min-height: 0;
+  line-height: 1.4;
+  padding: 0 0.5rem;
+}
+
+.pending-filter-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.2rem;
+}

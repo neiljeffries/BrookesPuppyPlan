@@ -1,0 +1,110 @@
+.register-section {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.register-icon {
+  color: #2e7d32;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.user-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.user-avatar-placeholder {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #bdbdbd;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-info small {
+  color: #777;
+}
+
+mat-card-content p {
+  font-size: 1.05rem;
+  margin: 0.75rem 0;
+  color: #555;
+}
+
+:host-context(.dark-theme) mat-card-content p {
+  color: #bbb;
+}
+
+.email-form {
+  margin: 1rem 0 0;
+}
+
+.email-field {
+  width: 100%;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.status-message.success mat-icon {
+  color: #2e7d32;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.status-message.info mat-icon {
+  color: #0277bd;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 1rem;
+}
+
+.action-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.divider-text {
+  color: #999;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ChatService } from './chat.service';
+import { ChatService, AVAILABLE_AGENTS } from './chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -30,6 +30,7 @@ export class Chat implements OnInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLElement>;
   @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
   readonly chatService = inject(ChatService);
+  readonly agents = AVAILABLE_AGENTS;
   userInput = '';
   loading = signal(false);
   error = signal('');
@@ -123,6 +124,14 @@ export class Chat implements OnInit {
 
   removeInstruction() {
     this.chatService.removeCustomInstruction();
+  }
+
+  toggleAgent(agentId: string) {
+    this.chatService.toggleAgent(agentId);
+  }
+
+  isAgentActive(agentId: string): boolean {
+    return this.chatService.activeAgentIds().includes(agentId);
   }
 
   onKeydown(event: KeyboardEvent) {

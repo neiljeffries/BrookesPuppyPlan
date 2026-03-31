@@ -5,36 +5,67 @@
       <span>Brooke's Puppy Plan</span>
     </div>
     <mat-nav-list>
-      <a mat-list-item routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidenav()">
+      <a
+        mat-list-item
+        routerLink="/"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeSidenav()"
+      >
         <mat-icon matListItemIcon>home</mat-icon> Home
       </a>
       <a mat-list-item routerLink="/about" routerLinkActive="active-link" (click)="closeSidenav()">
         <mat-icon matListItemIcon>info</mat-icon> About
       </a>
-      <a mat-list-item routerLink="/training" routerLinkActive="active-link" (click)="closeSidenav()">
+      <a
+        mat-list-item
+        routerLink="/training"
+        routerLinkActive="active-link"
+        (click)="closeSidenav()"
+      >
         <mat-icon matListItemIcon>school</mat-icon> Training
       </a>
       @if (auth.hasChatAccess$ | async) {
         <a mat-list-item routerLink="/chat" routerLinkActive="active-link" (click)="closeSidenav()">
           <mat-icon matListItemIcon>smart_toy</mat-icon> Yorkie Chat*
         </a>
-      }
-      <a mat-list-item routerLink="/contact" routerLinkActive="active-link" (click)="closeSidenav()">
-        <mat-icon matListItemIcon>mail</mat-icon> Contact
-      </a>
-      @if (auth.user$ | async) {
-        <a mat-list-item routerLink="/livestream" routerLinkActive="active-link" (click)="closeSidenav()">
-          <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
-        </a>
         <a mat-list-item routerLink="/reminders" routerLinkActive="active-link" (click)="closeSidenav()">
           <mat-icon matListItemIcon>notifications</mat-icon> Reminders
         </a>
       }
+      <a
+        mat-list-item
+        routerLink="/contact"
+        routerLinkActive="active-link"
+        (click)="closeSidenav()"
+      >
+        <mat-icon matListItemIcon>mail</mat-icon> Contact
+      </a>
+      @if (auth.user$ | async) {
+        <a
+          mat-list-item
+          routerLink="/livestream"
+          routerLinkActive="active-link"
+          (click)="closeSidenav()"
+        >
+          <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
+        </a>
+      }
       @if (auth.isAdmin$ | async) {
-        <a mat-list-item routerLink="/notes" routerLinkActive="active-link" (click)="closeSidenav()">
+        <a
+          mat-list-item
+          routerLink="/notes"
+          routerLinkActive="active-link"
+          (click)="closeSidenav()"
+        >
           <mat-icon matListItemIcon>sticky_note_2</mat-icon> Notes*
         </a>
-        <a mat-list-item routerLink="/admin" routerLinkActive="active-link" (click)="closeSidenav()">
+        <a
+          mat-list-item
+          routerLink="/admin"
+          routerLinkActive="active-link"
+          (click)="closeSidenav()"
+        >
           <mat-icon matListItemIcon>admin_panel_settings</mat-icon> Admin*
         </a>
       }
@@ -45,7 +76,12 @@
       </a>
       @if (auth.user$ | async; as user) {
         <div class="sidenav-user">
-          <img [src]="user.photoURL" [alt]="user.displayName" class="sidenav-avatar" referrerpolicy="no-referrer" />
+          <img
+            [src]="user.photoURL"
+            [alt]="user.displayName"
+            class="sidenav-avatar"
+            referrerpolicy="no-referrer"
+          />
           <span class="sidenav-user-name">{{ user.displayName }}</span>
         </div>
         <a mat-list-item (click)="signOut(); closeSidenav()">
@@ -61,7 +97,12 @@
 
   <mat-sidenav-content>
     <mat-toolbar class="toolbar">
-      <button mat-icon-button class="menu-button" (click)="sidenav.toggle()" aria-label="Toggle navigation menu">
+      <button
+        mat-icon-button
+        class="menu-button"
+        (click)="sidenav.toggle()"
+        aria-label="Toggle navigation menu"
+      >
         <mat-icon>menu</mat-icon>
       </button>
       <a mat-button routerLink="/" class="brand">
@@ -70,55 +111,78 @@
       </a>
       <span class="spacer"></span>
       <nav class="desktop-nav">
-        <a mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+        <a
+          mat-button
+          routerLink="/"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-link"
+        >
           <mat-icon>home</mat-icon> Home
         </a>
-        <span class="bone-divider">🦴</span>
-        <a mat-button routerLink="/about" routerLinkActive="active-link" class="nav-link">
-          <mat-icon>info</mat-icon> About
-        </a>
-        <span class="bone-divider">🦴</span>
+
         <a mat-button routerLink="/training" routerLinkActive="active-link" class="nav-link">
           <mat-icon>school</mat-icon> Training
         </a>
         @if (auth.hasChatAccess$ | async) {
-          <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/chat" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>smart_toy</mat-icon> Yorkie AI
+            <mat-icon>smart_toy</mat-icon> Yorkie Chat
           </a>
-        }
-        <span class="bone-divider">🦴</span>
-        <a mat-button routerLink="/contact" routerLinkActive="active-link" class="nav-link">
-          <mat-icon>mail</mat-icon> Contact
-        </a>
-        @if (auth.user$ | async) {
-          <span class="bone-divider">🦴</span>
-          <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>live_tv</mat-icon> Dog Whisperer
-          </a>
-          <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/reminders" routerLinkActive="active-link" class="nav-link">
             <mat-icon>notifications</mat-icon> Reminders
           </a>
         }
+
+        @if (auth.user$ | async) {
+          <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
+            <mat-icon>live_tv</mat-icon> Dog Whisperer
+          </a>
+        }
         @if (auth.isAdmin$ | async) {
-          <span class="bone-divider">🦴</span>
           <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
             <mat-icon>sticky_note_2</mat-icon> Notes
           </a>
-          <span class="bone-divider">🦴</span>
-          <a mat-button routerLink="/admin" routerLinkActive="active-link" class="nav-link admin-link">
+        }
+        <a mat-button routerLink="/contact" routerLinkActive="active-link" class="nav-link">
+          <mat-icon>mail</mat-icon> Contact
+        </a>
+        <a mat-button routerLink="/about" routerLinkActive="active-link" class="nav-link">
+          <mat-icon>info</mat-icon> About
+        </a>
+        @if (auth.isAdmin$ | async) {
+          <a
+            mat-button
+            routerLink="/admin"
+            routerLinkActive="active-link"
+            class="nav-link admin-link"
+          >
             <mat-icon>admin_panel_settings</mat-icon> Admin
           </a>
         }
       </nav>
       <div class="auth-section">
-        <button mat-icon-button (click)="theme.toggle()" [matTooltip]="theme.isDark() ? 'Light mode' : 'Dark mode'" class="theme-toggle" aria-label="Toggle dark mode">
+        <button
+          mat-icon-button
+          (click)="theme.toggle()"
+          [matTooltip]="theme.isDark() ? 'Light mode' : 'Dark mode'"
+          class="theme-toggle"
+          aria-label="Toggle dark mode"
+        >
           <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
         </button>
         @if (auth.user$ | async; as user) {
-          <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-button" aria-label="User menu">
-            <img [src]="user.photoURL" [alt]="user.displayName" class="toolbar-avatar" referrerpolicy="no-referrer" />
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="userMenu"
+            class="avatar-button"
+            aria-label="User menu"
+          >
+            <img
+              [src]="user.photoURL"
+              [alt]="user.displayName"
+              class="toolbar-avatar"
+              referrerpolicy="no-referrer"
+            />
           </button>
           <mat-menu #userMenu="matMenu">
             <div class="user-menu-header">
@@ -126,9 +190,7 @@
               <small>{{ user.email }}</small>
             </div>
             <mat-divider></mat-divider>
-            <button mat-menu-item (click)="signOut()">
-              <mat-icon>logout</mat-icon> Sign Out
-            </button>
+            <button mat-menu-item (click)="signOut()"><mat-icon>logout</mat-icon> Sign Out</button>
           </mat-menu>
         } @else {
           <button mat-button class="sign-in-btn" (click)="signIn()">
@@ -147,6 +209,14 @@
         <span class="floating-paw paw-8">🐾</span>
       </div>
     </mat-toolbar>
+
+    @if (auth.needsRegistration$ | async) {
+      <div class="registration-banner">
+        <mat-icon>info</mat-icon>
+        <span>Complete your registration to unlock all features.</span>
+        <a mat-button routerLink="/register">Register Now</a>
+      </div>
+    }
 
     <main class="main">
       <router-outlet />

@@ -1,0 +1,72 @@
+<section class="register-section">
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="register-icon">how_to_reg</mat-icon>
+      <mat-card-title>Register</mat-card-title>
+      <mat-card-subtitle>Create your account to access all features</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (registered) {
+        <div class="status-message success">
+          <mat-icon>check_circle</mat-icon>
+          <p>Registration complete! Redirecting&hellip;</p>
+        </div>
+      } @else if (auth.user$ | async; as user) {
+        <div class="user-preview">
+          @if (user.photoURL) {
+            <img [src]="user.photoURL" [alt]="user.displayName" class="user-avatar" referrerpolicy="no-referrer" />
+          } @else {
+            <mat-icon class="user-avatar-placeholder">account_circle</mat-icon>
+          }
+          <div class="user-info">
+            <strong>{{ user.displayName || 'New User' }}</strong>
+            <small>{{ user.email }}</small>
+          </div>
+        </div>
+        <p>Confirm your registration to unlock Yorkie Chat, Reminders, and more.</p>
+      } @else if (emailSent) {
+        <div class="status-message info">
+          <mat-icon>mark_email_read</mat-icon>
+          <div>
+            <p>A sign-in link has been sent to <strong>{{ email }}</strong>.</p>
+            <p>Check your inbox and click the link to continue.</p>
+          </div>
+        </div>
+      } @else {
+        <p>Choose how you'd like to sign in:</p>
+        <div class="email-form">
+          <mat-form-field appearance="outline" class="email-field">
+            <mat-label>Email address</mat-label>
+            <input matInput type="email" [(ngModel)]="email" placeholder="you@example.com" />
+          </mat-form-field>
+        </div>
+      }
+
+      @if (error) {
+        <p class="error-text">{{ error }}</p>
+      }
+    </mat-card-content>
+
+    <mat-card-actions>
+      @if (registered) {
+        <!-- redirecting -->
+      } @else if (auth.user$ | async) {
+        <button mat-raised-button color="primary" (click)="completeRegistration()" [disabled]="registering">
+          <mat-icon>how_to_reg</mat-icon>
+          {{ registering ? 'Registering\u2026' : 'Complete Registration' }}
+        </button>
+      } @else if (!emailSent) {
+        <div class="action-stack">
+          <button mat-raised-button color="primary" (click)="sendEmailLink()" [disabled]="!email">
+            <mat-icon>email</mat-icon> Send Sign-In Link
+          </button>
+          <span class="divider-text">or</span>
+          <button mat-stroked-button (click)="signInWithGoogle()">
+            <mat-icon>login</mat-icon> Sign in with Google
+          </button>
+        </div>
+      }
+    </mat-card-actions>
+  </mat-card>
+</section>

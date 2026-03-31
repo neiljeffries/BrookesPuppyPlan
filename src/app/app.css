@@ -169,6 +169,31 @@
   padding: 2rem;
 }
 
+/* Registration banner */
+.registration-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ffe0b2;
+}
+
+:host-context(.dark-theme) .registration-banner {
+  background: #3e2723;
+  color: #ffcc80;
+  border-bottom-color: #4e342e;
+}
+
+.registration-banner mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
 /* Desktop nav links (inline in toolbar) */
 .desktop-nav {
   display: flex;

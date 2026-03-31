@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { firebaseApp, db, ref, update, get } from './firebase';
-import { BehaviorSubject, map } from 'rxjs';
+import {
+  getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User,
+  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink
+} from 'firebase/auth';
+import { firebaseApp, db, ref, update, get, set } from './firebase';
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -15,6 +18,9 @@ export class AuthService {
   roles$ = this.rolesSubject.asObservable();
   isAdmin$ = this.roles$.pipe(map(roles => roles['admin'] === true));
   hasChatAccess$ = this.roles$.pipe(map(roles => roles['admin'] === true || roles['user'] === true));
+  needsRegistration$ = combineLatest([this.user$, this.roles$, this.ready$]).pipe(
+    map(([user, roles, ready]) => ready && !!user && roles['user'] !== true && roles['admin'] !== true)
+  );
 
   constructor() {
     onAuthStateChanged(this.auth, (user) => {
@@ -77,6 +83,39 @@ export class AuthService {
 
   async signInWithGoogle(): Promise<void> {
     await signInWithPopup(this.auth, new GoogleAuthProvider());
+  }
+
+  async sendEmailLink(email: string): Promise<void> {
+    const actionCodeSettings = {
+      url: globalThis.location.origin + '/register',
+      handleCodeInApp: true,
+    };
+    await sendSignInLinkToEmail(this.auth, email, actionCodeSettings);
+    globalThis.localStorage.setItem('emailForSignIn', email);
+  }
+
+  async completeEmailLinkSignIn(): Promise<boolean> {
+    if (!isSignInWithEmailLink(this.auth, globalThis.location.href)) return false;
+    let email = globalThis.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      email = globalThis.prompt('Please confirm your email address');
+    }
+    if (!email) return false;
+    await signInWithEmailLink(this.auth, email, globalThis.location.href);
+    globalThis.localStorage.removeItem('emailForSignIn');
+    return true;
+  }
+
+  async completeRegistration(): Promise<void> {
+    const user = this.user;
+    if (!user) return;
+    await set(ref(db, `users/${user.uid}/roles/user`), true);
+    await update(ref(db, `users/${user.uid}`), {
+      registered: true,
+      registrationDate: new Date().toISOString(),
+    });
+    // Reload roles so the UI updates immediately
+    await this.loadRoles(user.uid);
   }
 
   async signOut(): Promise<void> {
