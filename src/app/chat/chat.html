@@ -64,30 +64,31 @@
         }
       </mat-card-header>
 
-      <!-- Import instructions panel -->
+      <!-- Import agent panel -->
       @if (importOpen()) {
         <div class="import-panel">
-          @if (customInstruction()) {
-            <div class="active-instruction">
-              <mat-icon>check_circle</mat-icon>
-              <span class="instruction-preview">{{ customInstruction().substring(0, 80) }}{{ customInstruction().length > 80 ? '…' : '' }}</span>
-              <button mat-icon-button (click)="removeInstruction()" matTooltip="Remove custom instructions" class="remove-instruction">
-                <mat-icon>close</mat-icon>
-              </button>
-            </div>
-          }
-          <p class="import-hint">Paste instructions or upload a .md / .txt file to customize the agent's behavior.</p>
+          <p class="import-hint">Add a custom agent by giving it a name and instructions. Upload a .md / .txt file or paste directly.</p>
+          <mat-form-field appearance="outline" class="import-name-field">
+            <mat-label>Agent name</mat-label>
+            <input matInput [(ngModel)]="importName" maxlength="40" />
+          </mat-form-field>
           <mat-form-field appearance="outline" class="import-textarea-field">
             <mat-label>Paste instructions…</mat-label>
             <textarea matInput [(ngModel)]="importText" rows="5" class="import-textarea"></textarea>
           </mat-form-field>
+          @if (importError()) {
+            <div class="import-error">
+              <mat-icon>warning</mat-icon>
+              {{ importError() }}
+            </div>
+          }
           <div class="import-actions">
             <button mat-stroked-button (click)="fileInput.click()">
               <mat-icon>attach_file</mat-icon> Upload file
             </button>
             <input #fileInput type="file" accept=".md,.txt,.markdown" hidden (change)="onFileSelected($event)" />
-            <button mat-flat-button color="primary" [disabled]="!importText.trim()" (click)="applyImport()">
-              <mat-icon>check</mat-icon> Apply
+            <button mat-flat-button color="primary" [disabled]="!importText.trim() || !importName.trim()" (click)="applyImport()">
+              <mat-icon>add</mat-icon> Add Agent
             </button>
           </div>
         </div>
@@ -102,6 +103,16 @@
             @if (isAgentActive(agent.id)) {
               <mat-icon class="chip-check">check_circle</mat-icon>
             }
+          </button>
+        }
+        @for (agent of customAgents; track agent.id) {
+          <button class="agent-chip custom-agent-chip" [class.agent-active]="isAgentActive(agent.id)" (click)="toggleAgent(agent.id)" [matTooltip]="isAgentActive(agent.id) ? 'Remove ' + agent.name : 'Add ' + agent.name">
+            <mat-icon>psychology</mat-icon>
+            <span>{{ agent.name }}</span>
+            @if (isAgentActive(agent.id)) {
+              <mat-icon class="chip-check">check_circle</mat-icon>
+            }
+            <mat-icon class="chip-delete" (click)="removeCustomAgent($event, agent.id)" (keydown.enter)="removeCustomAgent($event, agent.id)" matTooltip="Delete agent" tabindex="0" role="button">close</mat-icon>
           </button>
         }
       </div>

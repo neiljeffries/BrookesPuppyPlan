@@ -37,9 +37,15 @@ export class Chat implements OnInit {
   sidebarOpen = signal(false);
   importOpen = signal(false);
   importText = '';
+  importName = '';
+  importError = signal('');
 
   get messages() {
     return this.chatService.messages();
+  }
+
+  get customAgents() {
+    return this.chatService.customAgents();
   }
 
   conversations = this.chatService.conversations;
@@ -48,6 +54,7 @@ export class Chat implements OnInit {
   ngOnInit() {
     this.chatService.loadConversations();
     this.chatService.loadCustomInstruction();
+    this.chatService.loadCustomAgents();
   }
 
   async send() {
@@ -103,9 +110,19 @@ export class Chat implements OnInit {
 
   applyImport() {
     const text = this.importText.trim();
-    if (!text) return;
-    this.chatService.applyCustomInstruction(text);
+    const name = this.importName.trim();
+    if (!text || !name) {
+      this.importError.set('Both a name and instructions are required.');
+      return;
+    }
+    const result = this.chatService.addCustomAgent(name, text);
+    if (!result.valid) {
+      this.importError.set(result.error!);
+      return;
+    }
     this.importText = '';
+    this.importName = '';
+    this.importError.set('');
     this.importOpen.set(false);
   }
 
@@ -124,6 +141,11 @@ export class Chat implements OnInit {
 
   removeInstruction() {
     this.chatService.removeCustomInstruction();
+  }
+
+  removeCustomAgent(event: Event, agentId: string) {
+    event.stopPropagation();
+    this.chatService.removeCustomAgent(agentId);
   }
 
   toggleAgent(agentId: string) {

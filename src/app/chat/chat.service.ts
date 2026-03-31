@@ -13,9 +13,65 @@ export interface AgentDef {
   name: string;
   icon: string;
   instruction: string;
+  custom?: boolean;
 }
 
 const STRIP_FRONTMATTER = (md: string) => md.replace(/^---[\s\S]*?---\s*/, '');
+
+/* ── Validation / sanitization for user-submitted agents ── */
+
+const MAX_AGENT_NAME_LENGTH = 40;
+const MAX_INSTRUCTION_LENGTH = 10000;
+const MAX_CUSTOM_AGENTS = 10;
+
+/** Patterns that indicate prompt-injection or jailbreak attempts */
+const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?previous\s+instructions/i,
+  /disregard\s+(all\s+)?prior/i,
+  /you\s+are\s+now\s+(?:DAN|unrestricted|unfiltered|jailbroken)/i,
+  /pretend\s+you\s+(?:are|have)\s+no\s+(?:rules|restrictions|limits)/i,
+  /override\s+(?:system|safety|content)\s+(?:prompt|policy|filter)/i,
+  /forget\s+(?:everything|your\s+instructions)/i,
+  /act\s+as\s+(?:if\s+)?you\s+(?:have\s+)?no\s+(?:guardrails|safety)/i,
+  /\bdo\s+anything\s+now\b/i,
+  /reveal\s+(?:your|the)\s+system\s+prompt/i,
+  /output\s+(?:your|the)\s+(?:system|initial)\s+(?:prompt|instructions)/i,
+];
+
+export interface AgentValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+export function validateAgentInput(name: string, instruction: string, existingCount: number): AgentValidationResult {
+  const trimmedName = name.trim();
+  const trimmedInstruction = instruction.trim();
+
+  if (!trimmedName) return { valid: false, error: 'Agent name is required.' };
+  if (trimmedName.length > MAX_AGENT_NAME_LENGTH) return { valid: false, error: `Name must be ${MAX_AGENT_NAME_LENGTH} characters or fewer.` };
+  if (!trimmedInstruction) return { valid: false, error: 'Instructions are required.' };
+  if (trimmedInstruction.length > MAX_INSTRUCTION_LENGTH) return { valid: false, error: `Instructions must be ${MAX_INSTRUCTION_LENGTH.toLocaleString()} characters or fewer.` };
+  if (existingCount >= MAX_CUSTOM_AGENTS) return { valid: false, error: `You can have at most ${MAX_CUSTOM_AGENTS} custom agents.` };
+
+  // Check for HTML/script tags
+  if (/<script[\s>]/i.test(trimmedInstruction) || /<\/script>/i.test(trimmedInstruction)) {
+    return { valid: false, error: 'Instructions cannot contain script tags.' };
+  }
+
+  // Check for injection patterns
+  for (const pattern of INJECTION_PATTERNS) {
+    if (pattern.test(trimmedInstruction)) {
+      return { valid: false, error: 'Instructions contain disallowed content that could interfere with the system.' };
+    }
+  }
+
+  return { valid: true };
+}
+
+/** Strip anything that could be rendered as HTML — instructions are plain text only */
+function sanitizeText(text: string): string {
+  return text.replaceAll(/[<>]/g, '').trim();
+}
 
 export const AVAILABLE_AGENTS: AgentDef[] = [
   {
@@ -118,6 +174,7 @@ export class ChatService {
   readonly currentConversationId = signal<string | null>(null);
   readonly customInstruction = signal<string>('');
   readonly activeAgentIds = signal<string[]>(['yorkie-expert']);
+  readonly customAgents = signal<AgentDef[]>([]);
 
   constructor() {
     this.ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
@@ -133,7 +190,8 @@ export class ChatService {
     const parts: string[] = [BASE_INSTRUCTION()];
 
     for (const agentId of this.activeAgentIds()) {
-      const agent = AVAILABLE_AGENTS.find(a => a.id === agentId);
+      const agent = AVAILABLE_AGENTS.find(a => a.id === agentId)
+        ?? this.customAgents().find(a => a.id === agentId);
       if (agent) parts.push(agent.instruction);
     }
 
@@ -165,6 +223,65 @@ export class ChatService {
 
   removeCustomInstruction() {
     this.applyCustomInstruction('');
+  }
+
+  /* ── Custom agent CRUD ── */
+
+  async loadCustomAgents() {
+    const uid = this.uid;
+    if (!uid) return;
+    const snapshot = await get(ref(db, `settings/${uid}/customAgents`));
+    const data = snapshot.val();
+    if (!data) {
+      this.customAgents.set([]);
+      return;
+    }
+    const agents: AgentDef[] = Object.entries(data).map(([id, val]: [string, any]) => ({
+      id,
+      name: sanitizeText(val.name || ''),
+      icon: 'psychology',
+      instruction: sanitizeText(val.instruction || ''),
+      custom: true,
+    }));
+    this.customAgents.set(agents);
+  }
+
+  addCustomAgent(name: string, instruction: string): AgentValidationResult {
+    const validation = validateAgentInput(name, instruction, this.customAgents().length);
+    if (!validation.valid) return validation;
+
+    const safeName = sanitizeText(name);
+    const safeInstruction = sanitizeText(instruction);
+    const id = 'custom-' + Date.now().toString(36);
+    const agent: AgentDef = { id, name: safeName, icon: 'psychology', instruction: safeInstruction, custom: true };
+
+    this.customAgents.update(list => [...list, agent]);
+    this.activeAgentIds.update(ids => [...ids, id]);
+    this.saveCustomAgents();
+    this.rebuildModel();
+    return { valid: true };
+  }
+
+  removeCustomAgent(agentId: string) {
+    this.customAgents.update(list => list.filter(a => a.id !== agentId));
+    this.activeAgentIds.update(ids => ids.filter(id => id !== agentId));
+    this.saveCustomAgents();
+    this.rebuildModel();
+  }
+
+  private async saveCustomAgents() {
+    const uid = this.uid;
+    if (!uid) return;
+    const agents = this.customAgents();
+    if (agents.length === 0) {
+      await remove(ref(db, `settings/${uid}/customAgents`));
+      return;
+    }
+    const data: Record<string, { name: string; instruction: string }> = {};
+    for (const a of agents) {
+      data[a.id] = { name: a.name, instruction: a.instruction };
+    }
+    await set(ref(db, `settings/${uid}/customAgents`), data);
   }
 
   async loadCustomInstruction() {

@@ -493,6 +493,28 @@
   color: var(--mat-sys-primary, #039be5);
 }
 
+.custom-agent-chip {
+  border-style: dashed;
+}
+
+.chip-delete {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+  color: var(--mat-sys-error, #d32f2f);
+}
+
+.agent-chip:hover .chip-delete {
+  opacity: 0.7;
+}
+
+.chip-delete:hover {
+  opacity: 1 !important;
+}
+
 /* Import instructions panel */
 .import-panel {
   padding: 0.75rem 1rem;
@@ -512,8 +534,27 @@
   opacity: 0.7;
 }
 
+.import-name-field {
+  width: 100%;
+}
+
 .import-textarea-field {
   width: 100%;
+}
+
+.import-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--mat-sys-error, #d32f2f);
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+}
+
+.import-error mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .import-actions {
@@ -521,46 +562,4 @@
   gap: 0.5rem;
   justify-content: flex-end;
   align-items: center;
-}
-
-.active-instruction {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--mat-sys-primary-container, #d1eaff);
-  border-radius: 8px;
-  font-size: 0.85rem;
-}
-
-:host-context(.dark-theme) .active-instruction {
-  background: var(--mat-sys-primary-container, #004a77);
-}
-
-.active-instruction mat-icon:first-child {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: var(--mat-sys-primary, #039be5);
-  flex-shrink: 0;
-}
-
-.instruction-preview {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.remove-instruction {
-  flex-shrink: 0;
-  width: 28px !important;
-  height: 28px !important;
-}
-
-.remove-instruction mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
 }
