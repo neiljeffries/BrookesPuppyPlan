@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
-  getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User,
-  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink
+  getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
+  GoogleAuthProvider, signOut, onAuthStateChanged, User,
+  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
+  setPersistence, browserLocalPersistence
 } from 'firebase/auth';
 import { firebaseApp, db, ref, update, get, set } from './firebase';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
@@ -23,6 +25,7 @@ export class AuthService {
   );
 
   constructor() {
+    this.init();
     onAuthStateChanged(this.auth, (user) => {
       this.userSubject.next(user);
       if (user) {
@@ -31,6 +34,34 @@ export class AuthService {
       } else {
         this.rolesSubject.next({});
         this.readySubject.next(true);
+      }
+    });
+    this.listenForVisibility();
+  }
+
+  private init(): void {
+    setPersistence(this.auth, browserLocalPersistence).then(() =>
+      getRedirectResult(this.auth)
+    ).then(result => {
+      if (result?.user) {
+        this.userSubject.next(result.user);
+        this.saveUserProfile(result.user);
+        this.loadRoles(result.user.uid);
+      }
+    }).catch(() => {});
+  }
+
+  private listenForVisibility(): void {
+    globalThis.document?.addEventListener('visibilitychange', () => {
+      if (globalThis.document.visibilityState === 'visible' && !this.userSubject.value) {
+        this.auth.authStateReady().then(() => {
+          const user = this.auth.currentUser;
+          if (user) {
+            this.userSubject.next(user);
+            this.saveUserProfile(user);
+            this.loadRoles(user.uid);
+          }
+        });
       }
     });
   }
@@ -82,7 +113,12 @@ export class AuthService {
   }
 
   async signInWithGoogle(): Promise<void> {
-    await signInWithPopup(this.auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(this.auth, provider);
+    } catch {
+      await signInWithRedirect(this.auth, provider);
+    }
   }
 
   async sendEmailLink(email: string): Promise<void> {

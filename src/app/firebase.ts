@@ -7,7 +7,7 @@ export { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "fi
 
 const firebaseConfig = {
   apiKey: "AIzaSyC91aymj8NyRRaNqmFx3VsEHIVL_RIFCj0",
-  authDomain: "neiljeffries-e25e8.firebaseapp.com",
+  authDomain: "neiljeffries-e25e8.web.app",
   databaseURL: "https://neiljeffries-e25e8.firebaseio.com",
   projectId: "neiljeffries-e25e8",
   storageBucket: "neiljeffries-e25e8.firebasestorage.app",
