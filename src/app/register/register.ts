@@ -22,6 +22,7 @@ export class Register implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   email = '';
+  password = '';
   emailSent = false;
   registering = false;
   registered = false;
@@ -44,6 +45,16 @@ export class Register implements OnInit {
       await this.auth.signInWithGoogle();
     } catch (e: any) {
       this.error = e.message || 'Sign-in failed';
+    }
+  }
+
+  async createAccount(): Promise<void> {
+    if (!this.email || !this.password) return;
+    try {
+      await this.auth.createEmailPasswordAccount(this.email, this.password);
+      this.error = '';
+    } catch (e: any) {
+      this.error = e.message || 'Account creation failed';
     }
   }
 

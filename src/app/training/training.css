@@ -67,6 +67,11 @@
 }
 
 /* Guides accordion */
+.guide-search-field {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
 .guides-accordion {
   display: flex;
   flex-direction: column;

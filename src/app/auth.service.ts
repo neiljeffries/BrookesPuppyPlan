@@ -3,7 +3,9 @@ import {
   getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
   GoogleAuthProvider, signOut, onAuthStateChanged, User,
   sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
-  setPersistence, browserLocalPersistence
+  setPersistence, browserLocalPersistence,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { firebaseApp, db, ref, update, get, set } from './firebase';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
@@ -67,11 +69,13 @@ export class AuthService {
   }
 
   private saveUserProfile(user: User): void {
+    const provider = user.providerData[0]?.providerId || 'unknown';
     update(ref(db, `users/${user.uid}`), {
       displayName: user.displayName,
       email: user.email,
       photoURL: user.photoURL,
       lastLogin: new Date().toISOString(),
+      provider,
     });
   }
 
@@ -119,6 +123,18 @@ export class AuthService {
     } catch {
       await signInWithRedirect(this.auth, provider);
     }
+  }
+
+  async signInWithEmailPassword(email: string, password: string): Promise<void> {
+    await signInWithEmailAndPassword(this.auth, email, password);
+  }
+
+  async createEmailPasswordAccount(email: string, password: string): Promise<void> {
+    await createUserWithEmailAndPassword(this.auth, email, password);
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    await sendPasswordResetEmail(this.auth, email);
   }
 
   async sendEmailLink(email: string): Promise<void> {

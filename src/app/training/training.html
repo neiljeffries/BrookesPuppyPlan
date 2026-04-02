@@ -312,8 +312,20 @@
       </ng-template>
 
       <div class="tab-content">
+        <mat-form-field appearance="outline" class="guide-search-field">
+          <mat-label>Search guides</mat-label>
+          <input matInput [ngModel]="guideSearch()" (ngModelChange)="guideSearch.set($event)" placeholder="e.g. sit, barking, potty…">
+          <mat-icon matPrefix>search</mat-icon>
+          @if (guideSearch()) {
+            <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
         <mat-accordion multi="false" displayMode="flat" class="guides-accordion">
 
+          @if (guideVisible('Sit')) {
           <!-- Sit -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -380,7 +392,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Stay')) {
           <!-- Stay -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -447,7 +461,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Come')) {
           <!-- Come -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -523,7 +539,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Stop Barking')) {
           <!-- Stop Barking -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -590,7 +608,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Stop Jumping')) {
           <!-- Stop Jumping -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -657,7 +677,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Potty Training')) {
           <!-- Potty Training -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -749,7 +771,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Heel Walk')) {
           <!-- Walking Next to You -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -852,7 +876,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Crate Training')) {
           <!-- Crate Training -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -937,7 +963,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Down')) {
           <!-- Down -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1022,7 +1050,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Leave It')) {
           <!-- Leave It -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1098,7 +1128,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Socialisation with Larger Dogs')) {
           <!-- Socialisation with Larger Dogs -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1183,7 +1215,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Handling & Grooming Desensitisation')) {
           <!-- Handling & Grooming Desensitisation -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1259,7 +1293,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Place / Settle on a Mat')) {
           <!-- Place / Settle on a Mat -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1335,7 +1371,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Drop It / Give')) {
           <!-- Drop It / Give -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1411,7 +1449,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Recall Under Distraction')) {
           <!-- Recall Under Distraction -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1487,7 +1527,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Car Travel Training')) {
           <!-- Car Travel Training -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1563,7 +1605,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Quiet Command')) {
           <!-- "Quiet" Command -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1639,7 +1683,9 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
+          @if (guideVisible('Resource Guarding')) {
           <!-- Resource Guarding -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -1715,6 +1761,7 @@
               </div>
             </div>
           </mat-expansion-panel>
+          }
 
         </mat-accordion>
       </div>

@@ -37,6 +37,7 @@ export class Reminders implements OnInit {
 
   reminders: Reminder[] = [];
   permissionState = signal<NotificationPermission>('default');
+  showForm = signal(false);
 
   title = '';
   body = '';
@@ -58,6 +59,7 @@ export class Reminders implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.dateTime = this.defaultDateTime();
     this.notifications.loadReminders();
     this.notifications.reminders$.subscribe((r) => {
       this.reminders = r;
@@ -90,8 +92,9 @@ export class Reminders implements OnInit {
     this.title = '';
     this.body = '';
     this.category = 'custom';
-    this.dateTime = '';
+    this.dateTime = this.defaultDateTime();
     this.repeat = 'none';
+    this.showForm.set(false);
   }
 
   async deleteReminder(id: string) {
@@ -100,5 +103,12 @@ export class Reminders implements OnInit {
 
   isPast(dateTime: string): boolean {
     return new Date(dateTime) < new Date();
+  }
+
+  private defaultDateTime(): string {
+    const d = new Date(Date.now() + 2 * 60_000);
+    d.setSeconds(0, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 }

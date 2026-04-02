@@ -39,15 +39,15 @@ export class App {
     this.sidenav.close();
   }
 
-  async signIn() {
+  async signInWithGoogle() {
     await this.auth.signInWithGoogle();
-    if (this.router.url === '/logged-out') {
+    if (this.router.url === '/login-required') {
       this.router.navigate(['/']);
     }
   }
 
   async signOut() {
     await this.auth.signOut();
-    this.router.navigate(['/logged-out']);
+    this.router.navigate(['/login-required']);
   }
 }

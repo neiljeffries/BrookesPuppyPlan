@@ -19,6 +19,7 @@ export interface UserRecord {
   roles: Record<string, boolean>;
   registered: boolean;
   registrationDate: string;
+  provider: string;
 }
 
 @Component({
@@ -34,7 +35,7 @@ export class Admin implements OnInit {
 
   readonly availableRoles = ['admin', 'user'];
   users: UserRecord[] = [];
-  displayedColumns = ['photo', 'displayName', 'email', 'role', 'status', 'lastLogin', 'actions'];
+  displayedColumns = ['photo', 'displayName', 'email', 'provider', 'role', 'status', 'lastLogin', 'actions'];
   loading = true;
   showPendingOnly = false;
 
@@ -51,6 +52,7 @@ export class Admin implements OnInit {
           roles: val.roles ?? {},
           registered: val.registered === true,
           registrationDate: val.registrationDate ?? '',
+          provider: val.provider ?? '',
         }));
       } else {
         this.users = [];

@@ -34,11 +34,15 @@
           </div>
         </div>
       } @else {
-        <p>Choose how you'd like to sign in:</p>
+        <p>Choose how you'd like to sign up:</p>
         <div class="email-form">
           <mat-form-field appearance="outline" class="email-field">
             <mat-label>Email address</mat-label>
             <input matInput type="email" [(ngModel)]="email" placeholder="you@example.com" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="email-field">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" [(ngModel)]="password" placeholder="At least 6 characters" />
           </mat-form-field>
         </div>
       }
@@ -58,12 +62,15 @@
         </button>
       } @else if (!emailSent) {
         <div class="action-stack">
-          <button mat-raised-button color="primary" (click)="sendEmailLink()" [disabled]="!email">
-            <mat-icon>email</mat-icon> Send Sign-In Link
+          <button mat-raised-button color="primary" (click)="createAccount()" [disabled]="!email || !password">
+            <mat-icon>person_add</mat-icon> Create Account
           </button>
-          <span class="divider-text">or</span>
+          <span class="divider-text">or sign up with</span>
           <button mat-stroked-button (click)="signInWithGoogle()">
-            <mat-icon>login</mat-icon> Sign in with Google
+            <mat-icon>login</mat-icon> Google
+          </button>
+          <button mat-stroked-button (click)="sendEmailLink()" [disabled]="!email">
+            <mat-icon>email</mat-icon> Email Link (Passwordless)
           </button>
         </div>
       }

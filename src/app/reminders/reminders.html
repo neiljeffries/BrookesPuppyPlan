@@ -21,7 +21,15 @@
     </mat-card>
   }
 
+  <!-- Add Reminder Toggle -->
+  @if (!showForm()) {
+    <button mat-raised-button color="primary" (click)="showForm.set(true)">
+      <mat-icon>add_alert</mat-icon> New Reminder
+    </button>
+  }
+
   <!-- Add Reminder Form -->
+  @if (showForm()) {
   <mat-card>
     <mat-card-header>
       <mat-icon mat-card-avatar class="section-icon">add_alert</mat-icon>
@@ -67,12 +75,18 @@
           <input matInput type="datetime-local" [(ngModel)]="dateTime" />
         </mat-form-field>
 
-        <button mat-raised-button color="primary" (click)="addReminder()" [disabled]="!title.trim() || !dateTime">
-          <mat-icon>alarm_add</mat-icon> Add Reminder
-        </button>
+        <div class="form-actions">
+          <button mat-raised-button color="primary" (click)="addReminder()" [disabled]="!title.trim() || !dateTime">
+            <mat-icon>alarm_add</mat-icon> Add Reminder
+          </button>
+          <button mat-button (click)="showForm.set(false)">
+            Cancel
+          </button>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
+  }
 
   <!-- Upcoming Reminders -->
   <mat-card>

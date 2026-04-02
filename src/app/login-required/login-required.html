@@ -8,9 +8,33 @@
       <p>You need to sign in to access this page.</p>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="signIn()">
-        <mat-icon>login</mat-icon> Sign in with Google
-      </button>
+      <div class="action-stack">
+        <button mat-raised-button color="primary" (click)="signInWithGoogle()">
+          <mat-icon>login</mat-icon> Sign in with Google
+        </button>
+        <span class="divider-text">or</span>
+        <div class="email-form">
+          <mat-form-field appearance="outline" class="email-field">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="email" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="email-field">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" [(ngModel)]="password" />
+          </mat-form-field>
+          <button mat-raised-button (click)="signInWithEmail()" [disabled]="!email || !password">
+            <mat-icon>email</mat-icon> Sign in with Email
+          </button>
+          @if (error) {
+            <p class="error-text">{{ error }}</p>
+          }
+          <a class="forgot-link" (click)="resetPassword()">Forgot password?</a>
+        </div>
+        <span class="divider-text">Don't have an account?</span>
+        <a mat-stroked-button routerLink="/register">
+          <mat-icon>person_add</mat-icon> Register
+        </a>
+      </div>
     </mat-card-actions>
   </mat-card>
 </section>

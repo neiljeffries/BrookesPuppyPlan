@@ -88,8 +88,14 @@
           <mat-icon matListItemIcon>logout</mat-icon> Sign Out
         </a>
       } @else {
-        <a mat-list-item (click)="signIn(); closeSidenav()">
+        <a mat-list-item (click)="signInWithGoogle(); closeSidenav()">
           <mat-icon matListItemIcon>login</mat-icon> Sign in with Google
+        </a>
+        <a mat-list-item routerLink="/login-required" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>email</mat-icon> Sign in with Email
+        </a>
+        <a mat-list-item routerLink="/register" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>person_add</mat-icon> Register
         </a>
       }
     </mat-nav-list>
@@ -193,9 +199,21 @@
             <button mat-menu-item (click)="signOut()"><mat-icon>logout</mat-icon> Sign Out</button>
           </mat-menu>
         } @else {
-          <button mat-button class="sign-in-btn" (click)="signIn()">
+          <button mat-button class="sign-in-btn" [matMenuTriggerFor]="signInMenu">
             <mat-icon>login</mat-icon> Sign In
           </button>
+          <mat-menu #signInMenu="matMenu">
+            <button mat-menu-item (click)="signInWithGoogle()">
+              <mat-icon>login</mat-icon> Sign in with Google
+            </button>
+            <button mat-menu-item routerLink="/login-required">
+              <mat-icon>email</mat-icon> Sign in with Email
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item routerLink="/register">
+              <mat-icon>person_add</mat-icon> Register
+            </button>
+          </mat-menu>
         }
       </div>
       <div class="toolbar-paws" aria-hidden="true">
