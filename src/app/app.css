@@ -1,6 +1,6 @@
 /* Sidenav container fills viewport */
 .sidenav-container {
-  height: 100%;
+  min-height: 100%;
 }
 
 .toolbar {

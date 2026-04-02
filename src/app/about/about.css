@@ -82,6 +82,13 @@
 :host-context(.dark-theme) .icon-purple { background: #2a1230; color: #ce93d8; }
 :host-context(.dark-theme) .icon-amber  { background: #3d2e00; color: #ffd54f; }
 
+/* Bark button */
+.bark-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
 /* ===== Mobile responsive ===== */
 @media (max-width: 768px) {
   .about-features {

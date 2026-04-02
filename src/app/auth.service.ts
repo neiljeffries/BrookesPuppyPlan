@@ -16,6 +16,7 @@ export class AuthService {
   private readonly userSubject = new BehaviorSubject<User | null>(null);
   private readonly readySubject = new BehaviorSubject<boolean>(false);
   private readonly rolesSubject = new BehaviorSubject<Record<string, boolean>>({});
+  private barkAudio: HTMLAudioElement | null = null;
 
   user$ = this.userSubject.asObservable();
   ready$ = this.readySubject.asObservable();
@@ -29,8 +30,10 @@ export class AuthService {
   constructor() {
     this.init();
     onAuthStateChanged(this.auth, (user) => {
+      const wasLoggedOut = !this.userSubject.value;
       this.userSubject.next(user);
       if (user) {
+        if (wasLoggedOut) this.playBark();
         this.saveUserProfile(user);
         this.loadRoles(user.uid);
       } else {
@@ -172,5 +175,11 @@ export class AuthService {
 
   async signOut(): Promise<void> {
     await signOut(this.auth);
+  }
+
+  private playBark(): void {
+    this.barkAudio ??= new Audio('small-dog-bark.mp3');
+    this.barkAudio.currentTime = 0;
+    this.barkAudio.play().catch(() => {});
   }
 }
