@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { firebaseApp, db, ref, update, get, set } from './firebase';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, combineLatest, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -17,7 +17,9 @@ export class AuthService {
   private readonly readySubject = new BehaviorSubject<boolean>(false);
   private readonly rolesSubject = new BehaviorSubject<Record<string, boolean>>({});
   private barkAudio: HTMLAudioElement | null = null;
+  private readonly barkSubject = new ReplaySubject<void>(1, 3000);
 
+  bark$ = this.barkSubject.asObservable();
   user$ = this.userSubject.asObservable();
   ready$ = this.readySubject.asObservable();
   roles$ = this.rolesSubject.asObservable();
@@ -177,9 +179,10 @@ export class AuthService {
     await signOut(this.auth);
   }
 
-  private playBark(): void {
+  playBark(): void {
     this.barkAudio ??= new Audio('small-dog-bark.mp3');
     this.barkAudio.currentTime = 0;
     this.barkAudio.play().catch(() => {});
+    this.barkSubject.next();
   }
 }

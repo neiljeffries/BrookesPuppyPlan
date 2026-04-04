@@ -14,6 +14,5 @@ export const routes: Routes = [
   { path: 'chat', loadComponent: () => import('./chat/chat').then(m => m.Chat), canActivate: [roleGuard] },
   { path: 'contact', loadComponent: () => import('./contact/contact').then(m => m.Contact) },
   { path: 'reminders', loadComponent: () => import('./reminders/reminders').then(m => m.Reminders), canActivate: [roleGuard] },
-  { path: 'livestream', loadComponent: () => import('./livestream/livestream').then(m => m.Livestream), canActivate: [authGuard] },
   { path: 'admin', loadComponent: () => import('./admin/admin').then(m => m.Admin), canActivate: [adminGuard] },
 ];

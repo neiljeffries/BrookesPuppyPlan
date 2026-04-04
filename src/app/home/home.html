@@ -1,5 +1,10 @@
 <section class="hero">
-  <img src="YorkshireTerrier.png" alt="Yorkshire Terrier puppy" class="puppy-img" />
+  <div class="puppy-wrapper">
+    <img src="YorkshireTerrier.png" alt="Yorkshire Terrier puppy" class="puppy-img" (click)="onPuppyClick()" />
+    @for (id of barkBubbles(); track id) {
+      <span class="bark-bubble">WOOF!</span>
+    }
+  </div>
   <h1>Plan Your Perfect Yorkie Journey!</h1>
   <p>Everything you need to prepare for bringing home your new Yorkshire Terrier.</p>
 </section>

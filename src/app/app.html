@@ -41,16 +41,6 @@
       >
         <mat-icon matListItemIcon>mail</mat-icon> Contact
       </a>
-      @if (auth.user$ | async) {
-        <a
-          mat-list-item
-          routerLink="/livestream"
-          routerLinkActive="active-link"
-          (click)="closeSidenav()"
-        >
-          <mat-icon matListItemIcon>live_tv</mat-icon> Dog Whisperer
-        </a>
-      }
       @if (auth.isAdmin$ | async) {
         <a
           mat-list-item
@@ -139,11 +129,6 @@
           </a>
         }
 
-        @if (auth.user$ | async) {
-          <a mat-button routerLink="/livestream" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>live_tv</mat-icon> Dog Whisperer
-          </a>
-        }
         @if (auth.isAdmin$ | async) {
           <a mat-button routerLink="/notes" routerLinkActive="active-link" class="nav-link">
             <mat-icon>sticky_note_2</mat-icon> Notes

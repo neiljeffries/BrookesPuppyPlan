@@ -17,6 +17,9 @@
 .icon-blue { background: #e3f2fd; color: #1565c0; }
 .icon-purple { background: #f3e5f5; color: #7b1fa2; }
 .icon-amber { background: #fff8e1; color: #f57f17; }
+.icon-white { background: #f5f5f5; color: #ffffff; }
+.icon-gray { background: #eeeeee; color: #757575; }
+.icon-orange { background: #fff3e0; color: #e65100; }
 
 .about-container > mat-card mat-card-content p {
   margin-top: 0.75rem;
@@ -81,6 +84,9 @@
 :host-context(.dark-theme) .icon-blue   { background: #0d2137; color: #64b5f6; }
 :host-context(.dark-theme) .icon-purple { background: #2a1230; color: #ce93d8; }
 :host-context(.dark-theme) .icon-amber  { background: #3d2e00; color: #ffd54f; }
+:host-context(.dark-theme) .icon-white  { background: #424242; color: #ffffff; }
+:host-context(.dark-theme) .icon-gray   { background: #303030; color: #bdbdbd; }
+:host-context(.dark-theme) .icon-orange { background: #3e2000; color: #ffab40; }
 
 /* Bark button */
 .bark-section {

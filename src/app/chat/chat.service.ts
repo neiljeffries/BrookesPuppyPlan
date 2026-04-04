@@ -4,7 +4,13 @@ import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import type { ChatSession, GenerativeModel, AI } from 'firebase/ai';
 import { AuthService } from '../auth.service';
 
-const BASE_INSTRUCTION = () => `Today's date is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+const DATE_PREAMBLE = () => `Today's date is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
+
+const BASE_INSTRUCTION_GENERAL = () => `${DATE_PREAMBLE()}
+
+You are a helpful, knowledgeable assistant. Keep responses concise and conversational — this is a chat, not an article.`;
+
+const BASE_INSTRUCTION_APP = () => `${DATE_PREAMBLE()}
 
 You are a helpful assistant for the Brooke's Puppy Plan app. Keep responses concise and conversational — this is a chat, not an article.`;
 
@@ -187,9 +193,11 @@ export class ChatService {
   }
 
   private buildModel(extra: string): GenerativeModel {
-    const parts: string[] = [BASE_INSTRUCTION()];
+    const activeIds = this.activeAgentIds();
+    const hasAgents = activeIds.length > 0;
+    const parts: string[] = [hasAgents ? BASE_INSTRUCTION_APP() : BASE_INSTRUCTION_GENERAL()];
 
-    for (const agentId of this.activeAgentIds()) {
+    for (const agentId of activeIds) {
       const agent = AVAILABLE_AGENTS.find(a => a.id === agentId)
         ?? this.customAgents().find(a => a.id === agentId);
       if (agent) parts.push(agent.instruction);

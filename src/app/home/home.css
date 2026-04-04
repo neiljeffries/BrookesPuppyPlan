@@ -1,6 +1,39 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+:host::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: url('/winston2.jpg') center / cover no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: -1;
+}
+
+:host-context(.dark-theme)::before {
+  background: url('/winston3.jpg') center / cover no-repeat;
+}
+
+@media (max-width: 600px) {
+  :host::before {
+    width: 100%;
+  }
+}
+
 .hero {
   text-align: center;
   padding: 3rem 1rem 2rem;
+}
+
+.puppy-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
 .puppy-img {
@@ -10,6 +43,63 @@
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.puppy-img:active {
+  transform: scale(0.95);
+}
+
+/* Bark speech bubbles */
+.bark-bubble {
+  position: absolute;
+  right: -60px;
+  background: var(--mat-sys-primary, #6750a4);
+  color: var(--mat-sys-on-primary, #fff);
+  font-weight: 700;
+  font-size: 1.25rem;
+  padding: 10px 20px;
+  border-radius: 24px;
+  white-space: nowrap;
+  animation: bark-pop 0.7s ease-out forwards;
+  pointer-events: none;
+}
+
+.bark-bubble:nth-child(2) { top: 5%; right: -85px; }
+.bark-bubble:nth-child(3) { top: 30%; right: -95px; }
+.bark-bubble:nth-child(4) { top: 55%; right: -80px; }
+
+/* Tail pointer toward the puppy */
+.bark-bubble::after {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid transparent;
+  border-right-color: var(--mat-sys-primary, #6750a4);
+}
+
+@keyframes bark-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) translateX(-10px);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.15) translateX(4px);
+  }
+  40% {
+    transform: scale(1) translateX(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
 }
 
 .hero h1 {

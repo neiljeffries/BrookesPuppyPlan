@@ -13,7 +13,7 @@
 
   <mat-card class="winston-card">
     <mat-card-header>
-      <mat-icon mat-card-avatar class="about-icon icon-amber">pets</mat-icon>
+      <mat-icon mat-card-avatar class="about-icon icon-white">pets</mat-icon>
       <mat-card-title>Winston</mat-card-title>
       <mat-card-subtitle>Our Yorkshire Terrier</mat-card-subtitle>
     </mat-card-header>
@@ -34,11 +34,57 @@
           </div>
         </div>
       </div>
-      <div class="bark-section">
-        <button mat-fab extended color="primary" (click)="bark()" [disabled]="barking()">
-          <mat-icon>volume_up</mat-icon>
-          {{ barking() ? 'Yapping!' : 'Hear Winston Bark!' }}
-        </button>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="winston-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="about-icon icon-gray">pets</mat-icon>
+      <mat-card-title>Thunder</mat-card-title>
+      <mat-card-subtitle>Our Gray Tiger Tabby</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="winston-details">
+        <div class="winston-detail">
+          <mat-icon>cake</mat-icon>
+          <div>
+            <strong>Birthday</strong>
+            <span>{{ thunderBirthday }}</span>
+          </div>
+        </div>
+        <div class="winston-detail">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Current Age</strong>
+            <span>{{ thunderAge() }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="winston-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="about-icon icon-orange">pets</mat-icon>
+      <mat-card-title>Jax</mat-card-title>
+      <mat-card-subtitle>Our Pumpkin Tabby</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="winston-details">
+        <div class="winston-detail">
+          <mat-icon>cake</mat-icon>
+          <div>
+            <strong>Birthday</strong>
+            <span>{{ jaxBirthday }}</span>
+          </div>
+        </div>
+        <div class="winston-detail">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Current Age</strong>
+            <span>{{ jaxAge() }}</span>
+          </div>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
