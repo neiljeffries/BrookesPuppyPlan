@@ -51,54 +51,68 @@
   transform: scale(0.95);
 }
 
-/* Bark speech bubbles */
+/* Bark speech bubbles — comic-style pops above Winston */
 .bark-bubble {
   position: absolute;
-  right: -60px;
-  background: var(--mat-sys-primary, #6750a4);
-  color: var(--mat-sys-on-primary, #fff);
-  font-weight: 700;
-  font-size: 1.25rem;
-  padding: 10px 20px;
-  border-radius: 24px;
+  top: -12px;
+  left: 50%;
+  background: var(--mat-sys-primary-container, #eaddff);
+  color: var(--mat-sys-on-primary-container, #21005d);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 20px;
   white-space: nowrap;
-  animation: bark-pop 0.7s ease-out forwards;
+  animation: bark-float 0.8s ease-out forwards;
   pointer-events: none;
+  box-shadow: 0 3px 10px rgba(103, 80, 164, 0.25);
 }
 
-.bark-bubble:nth-child(2) { top: 5%; right: -85px; }
-.bark-bubble:nth-child(3) { top: 30%; right: -95px; }
-.bark-bubble:nth-child(4) { top: 55%; right: -80px; }
-
-/* Tail pointer toward the puppy */
+/* Small triangle tail pointing down toward Winston */
 .bark-bubble::after {
   content: '';
   position: absolute;
-  left: -8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 8px solid transparent;
-  border-right-color: var(--mat-sys-primary, #6750a4);
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: var(--mat-sys-primary-container, #eaddff);
 }
 
-@keyframes bark-pop {
+/* Fan out each bubble with slight offset and rotation */
+.bark-bubble:nth-child(2) { top: -18px; left: 20%;  transform: rotate(-8deg); }
+.bark-bubble:nth-child(3) { top: -24px; left: 45%;  transform: rotate(3deg);  }
+.bark-bubble:nth-child(4) { top: -14px; left: 72%;  transform: rotate(6deg);  }
+
+:host-context(.dark-theme) .bark-bubble {
+  background: var(--mat-sys-primary-container, #4f378b);
+  color: var(--mat-sys-on-primary-container, #eaddff);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+:host-context(.dark-theme) .bark-bubble::after {
+  border-top-color: var(--mat-sys-primary-container, #4f378b);
+}
+
+@keyframes bark-float {
   0% {
     opacity: 0;
-    transform: scale(0.4) translateX(-10px);
+    transform: scale(0.3) translateY(10px);
   }
-  20% {
+  25% {
     opacity: 1;
-    transform: scale(1.15) translateX(4px);
+    transform: scale(1.1) translateY(-6px);
   }
-  40% {
-    transform: scale(1) translateX(0);
+  50% {
+    transform: scale(1) translateY(-2px);
   }
   80% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: scale(0.8) translateY(-10px);
+    transform: scale(0.9) translateY(-18px);
   }
 }
 
@@ -110,6 +124,82 @@
 .hero p {
   font-size: 1.15rem;
   color: var(--mat-sys-on-surface-variant);
+}
+
+/* Winston quote row — image + speech bubble side by side */
+.winston-quote-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Speech bubble */
+.speech-bubble {
+  position: relative;
+  max-width: 340px;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  background: var(--mat-sys-primary-container, #eaddff);
+  color: var(--mat-sys-on-primary-container, #21005d);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Refresh quote button */
+.refresh-quote-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  --mdc-icon-button-state-layer-size: 28px;
+  --mdc-icon-button-icon-size: 18px;
+  font-size: 18px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.refresh-quote-btn:hover {
+  opacity: 1;
+}
+
+/* Triangle pointer toward Winston */
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 10px solid transparent;
+  border-right-color: var(--mat-sys-primary-container, #eaddff);
+  border-left: 0;
+}
+
+:host-context(.dark-theme) .speech-bubble {
+  background: var(--mat-sys-primary-container, #4f378b);
+  color: var(--mat-sys-on-primary-container, #eaddff);
+}
+
+:host-context(.dark-theme) .speech-bubble::before {
+  border-right-color: var(--mat-sys-primary-container, #4f378b);
+}
+
+.quote-text {
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.quote-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mat-sys-on-primary-container, #21005d);
+  font-size: 0.85rem;
 }
 
 .content-section {
@@ -196,6 +286,28 @@
     margin-bottom: 2rem;
   }
 
+  .winston-quote-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .speech-bubble {
+    max-width: 90%;
+  }
+
+  .speech-bubble::before {
+    left: 50%;
+    top: -10px;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-bottom-color: var(--mat-sys-primary-container, #eaddff);
+    border-top: 0;
+  }
+
+  :host-context(.dark-theme) .speech-bubble::before {
+    border-bottom-color: var(--mat-sys-primary-container, #4f378b);
+  }
+
   .content-section h2 {
     font-size: 1.25rem;
   }
@@ -234,5 +346,14 @@
     font-size: 20px;
     width: 36px;
     height: 36px;
+  }
+
+  .speech-bubble {
+    max-width: 85%;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .quote-text {
+    font-size: 0.9rem;
   }
 }

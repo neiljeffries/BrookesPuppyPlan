@@ -1,10 +1,32 @@
 <section class="hero">
-  <div class="puppy-wrapper">
-    <img src="YorkshireTerrier.png" alt="Yorkshire Terrier puppy" class="puppy-img" (click)="onPuppyClick()" />
-    @for (id of barkBubbles(); track id) {
-      <span class="bark-bubble">WOOF!</span>
-    }
+  <div class="winston-quote-row">
+    <div class="puppy-wrapper">
+      <img src="winston.jpg" alt="Winston the Yorkie" class="puppy-img" (click)="onPuppyClick()" />
+      @for (id of barkBubbles(); track id) {
+        <span class="bark-bubble">WOOF!</span>
+      }
+    </div>
+
+    <!-- Winston's speech bubble -->
+    <div class="speech-bubble">
+      @if (quoteLoading()) {
+        <div class="quote-loading">
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Winston is thinking...</span>
+        </div>
+      } @else if (dailyQuote()) {
+        <p class="quote-text">{{ dailyQuote() }}</p>
+        <button mat-icon-button
+                class="refresh-quote-btn"
+                matTooltip="New quote"
+                (click)="loadQuote()"
+                [disabled]="quoteLoading()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      }
+    </div>
   </div>
+
   <h1>Plan Your Perfect Yorkie Journey!</h1>
   <p>Everything you need to prepare for bringing home your new Yorkshire Terrier.</p>
 </section>
