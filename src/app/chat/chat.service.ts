@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firebaseApp, db, ref, get, set, update, push, remove } from '../firebase';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import type { ChatSession, GenerativeModel, AI } from 'firebase/ai';
@@ -166,6 +166,12 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: number;
+  tag?: string;
+}
+
+export interface TagGroup {
+  tag: string;
+  conversations: ConversationSummary[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -181,6 +187,27 @@ export class ChatService {
   readonly customInstruction = signal<string>('');
   readonly activeAgentIds = signal<string[]>(['yorkie-expert']);
   readonly customAgents = signal<AgentDef[]>([]);
+
+  readonly groupedConversations = computed<TagGroup[]>(() => {
+    const convs = this.conversations();
+    const groups = new Map<string, ConversationSummary[]>();
+    for (const c of convs) {
+      const tag = c.tag || '';
+      if (!groups.has(tag)) groups.set(tag, []);
+      groups.get(tag)!.push(c);
+    }
+    const result: TagGroup[] = [];
+    // Named tags first (alphabetical), untagged last
+    const sorted = [...groups.keys()].sort((a, b) => {
+      if (!a) return 1;
+      if (!b) return -1;
+      return a.localeCompare(b);
+    });
+    for (const tag of sorted) {
+      result.push({ tag, conversations: groups.get(tag)! });
+    }
+    return result;
+  });
 
   constructor() {
     this.ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
@@ -270,6 +297,26 @@ export class ChatService {
     return { valid: true };
   }
 
+  editCustomAgent(agentId: string, name: string, instruction: string): AgentValidationResult {
+    const existing = this.customAgents().find(a => a.id === agentId);
+    if (!existing) return { valid: false, error: 'Agent not found.' };
+
+    // Exclude the agent being edited from the count check
+    const otherCount = this.customAgents().length - 1;
+    const validation = validateAgentInput(name, instruction, otherCount);
+    if (!validation.valid) return validation;
+
+    const safeName = sanitizeText(name);
+    const safeInstruction = sanitizeText(instruction);
+
+    this.customAgents.update(list =>
+      list.map(a => a.id === agentId ? { ...a, name: safeName, instruction: safeInstruction } : a)
+    );
+    this.saveCustomAgents();
+    this.rebuildModel();
+    return { valid: true };
+  }
+
   removeCustomAgent(agentId: string) {
     this.customAgents.update(list => list.filter(a => a.id !== agentId));
     this.activeAgentIds.update(ids => ids.filter(id => id !== agentId));
@@ -339,6 +386,7 @@ export class ChatService {
         id,
         title: val.title || 'New Chat',
         updatedAt: val.updatedAt || val.createdAt || 0,
+        tag: val.tag || '',
       }))
       .sort((a, b) => b.updatedAt - a.updatedAt);
     this.conversations.set(list);
@@ -362,6 +410,42 @@ export class ChatService {
     this.messages.set([]);
     this.currentConversationId.set(null);
     this.startNewChat([]);
+  }
+
+  async renameConversation(conversationId: string, newTitle: string) {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    const uid = this.uid;
+    if (!uid) return;
+    await update(ref(db, `chats/${uid}/${conversationId}`), { title: trimmed });
+    this.conversations.update(list =>
+      list.map(c => c.id === conversationId ? { ...c, title: trimmed } : c)
+    );
+  }
+
+  async tagConversation(conversationId: string, tag: string) {
+    const trimmed = tag.trim();
+    const uid = this.uid;
+    if (!uid) return;
+    await update(ref(db, `chats/${uid}/${conversationId}`), { tag: trimmed });
+    this.conversations.update(list =>
+      list.map(c => c.id === conversationId ? { ...c, tag: trimmed } : c)
+    );
+  }
+
+  async renameTag(oldTag: string, newTag: string) {
+    const trimmed = newTag.trim();
+    const uid = this.uid;
+    if (!uid) return;
+    const toUpdate = this.conversations().filter(c => (c.tag || '') === oldTag);
+    const updates: Record<string, string> = {};
+    for (const c of toUpdate) {
+      updates[`${c.id}/tag`] = trimmed;
+    }
+    await update(ref(db, `chats/${uid}`), updates);
+    this.conversations.update(list =>
+      list.map(c => (c.tag || '') === oldTag ? { ...c, tag: trimmed } : c)
+    );
   }
 
   async deleteConversation(conversationId: string) {
@@ -406,7 +490,8 @@ export class ChatService {
 
     this.conversations.update(list => {
       const filtered = list.filter(c => c.id !== conversationId);
-      return [{ id: conversationId!, title, updatedAt: now }, ...filtered];
+      const existing = list.find(c => c.id === conversationId);
+      return [{ id: conversationId!, title, updatedAt: now, tag: existing?.tag || '' }, ...filtered];
     });
   }
 

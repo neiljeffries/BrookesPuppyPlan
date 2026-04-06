@@ -1,0 +1,11 @@
+<div class="video-bg">
+  <video
+    autoplay
+    [muted]="true"
+    playsinline
+    (ended)="onVideoEnded($event)"
+    class="bg-video"
+  >
+    <source src="winston_lightsaber.mp4" type="video/mp4" />
+  </video>
+</div>

@@ -27,7 +27,7 @@
       </a>
       @if (auth.hasChatAccess$ | async) {
         <a mat-list-item routerLink="/chat" routerLinkActive="active-link" (click)="closeSidenav()">
-          <mat-icon matListItemIcon>smart_toy</mat-icon> Yorkie Chat*
+          <mat-icon matListItemIcon>smart_toy</mat-icon> Agent Chat*
         </a>
         <a mat-list-item routerLink="/reminders" routerLinkActive="active-link" (click)="closeSidenav()">
           <mat-icon matListItemIcon>notifications</mat-icon> Reminders
@@ -122,7 +122,7 @@
         </a>
         @if (auth.hasChatAccess$ | async) {
           <a mat-button routerLink="/chat" routerLinkActive="active-link" class="nav-link">
-            <mat-icon>smart_toy</mat-icon> Yorkie Chat
+            <mat-icon>smart_toy</mat-icon> Agent Chat
           </a>
           <a mat-button routerLink="/reminders" routerLinkActive="active-link" class="nav-link">
             <mat-icon>notifications</mat-icon> Reminders

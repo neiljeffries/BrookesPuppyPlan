@@ -18,18 +18,71 @@
       </button>
     </div>
     <div class="conversation-list">
-      @for (conv of conversations(); track conv.id) {
-        <div class="conversation-item"
-             [class.active]="conv.id === chatService.currentConversationId()"
-             (click)="switchChat(conv.id)">
-          <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
-          <div class="conv-info">
-            <span class="conv-title">{{ conv.title }}</span>
-            <span class="conv-date">{{ conv.updatedAt | date:'short' }}</span>
-          </div>
-          <button mat-icon-button class="conv-delete" (click)="deleteChat($event, conv.id)" matTooltip="Delete">
-            <mat-icon>delete_outline</mat-icon>
-          </button>
+      @for (group of groupedConversations(); track group.tag) {
+        <div class="tag-group">
+          @if (group.tag) {
+            <div class="tag-group-header">
+              <mat-icon class="tag-group-icon">label</mat-icon>
+              @if (editingTag() === group.tag) {
+                <input class="tag-name-input"
+                       [(ngModel)]="editingTagValue"
+                       (keydown)="onEditTagKeydown($event)"
+                       (blur)="saveEditTag()"
+                       maxlength="30"
+                       autofocus />
+              } @else {
+                <span class="tag-group-name" (click)="startEditTag(group.tag)" (keydown.enter)="startEditTag(group.tag)" tabindex="0">{{ group.tag }}</span>
+              }
+            </div>
+          } @else {
+            @if (groupedConversations().length > 1) {
+              <div class="tag-group-header">
+                <mat-icon class="tag-group-icon">label_off</mat-icon>
+                <span class="tag-group-name untagged">Untagged</span>
+              </div>
+            }
+          }
+          @for (conv of group.conversations; track conv.id) {
+            <div class="conversation-item"
+                 [class.active]="conv.id === chatService.currentConversationId()"
+                 (click)="switchChat(conv.id)">
+              <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
+              <div class="conv-info">
+                @if (editingConvId() === conv.id) {
+                  <input class="conv-title-input"
+                         [(ngModel)]="editingConvTitle"
+                         (keydown)="onConvTitleKeydown($event)"
+                         (blur)="saveConvTitle($event)"
+                         (click)="$event.stopPropagation()"
+                         maxlength="80"
+                         autofocus />
+                } @else if (taggingConvId() === conv.id) {
+                  <input class="conv-title-input"
+                         [(ngModel)]="taggingConvValue"
+                         (keydown)="onConvTagKeydown($event)"
+                         (blur)="saveConvTag($event)"
+                         (click)="$event.stopPropagation()"
+                         placeholder="Tag name (or empty to remove)"
+                         maxlength="30"
+                         autofocus />
+                } @else {
+                  <span class="conv-title" [matTooltip]="conv.title" matTooltipShowDelay="0">{{ conv.title }}</span>
+                  <span class="conv-date">{{ conv.updatedAt | date:'short' }}</span>
+                }
+              </div>
+              @if (editingConvId() !== conv.id && taggingConvId() !== conv.id) {
+                <button mat-icon-button class="conv-action" (click)="startTagConv($event, conv)" matTooltip="Tag">
+                  <mat-icon>{{ conv.tag ? 'label' : 'label_outline' }}</mat-icon>
+                </button>
+                <button mat-icon-button class="conv-action conv-edit" (click)="startEditConv($event, conv)" matTooltip="Rename">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              }
+              <button mat-icon-button class="conv-action conv-delete" (click)="deleteChat($event, conv.id)" matTooltip="Delete">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          }
         </div>
       } @empty {
         <div class="no-chats">
@@ -53,7 +106,7 @@
         <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 2.5</mat-card-title>
         <mat-card-subtitle>Select agents to customize your chat</mat-card-subtitle>
         <span class="spacer"></span>
-        <button mat-stroked-button (click)="importOpen.set(!importOpen())" aria-label="Import custom instructions">
+        <button mat-stroked-button (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())" aria-label="Import custom instructions">
           <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
           <span class="import-btn-text">{{ importOpen() ? 'Close' : 'Import Agent' }}</span>
         </button>
@@ -67,7 +120,7 @@
       <!-- Import agent panel -->
       @if (importOpen()) {
         <div class="import-panel">
-          <p class="import-hint">Add a custom agent by giving it a name and instructions. Upload a .md / .txt file or paste directly.</p>
+          <p class="import-hint">{{ editingAgentId() ? 'Edit your custom agent\'s name and instructions.' : 'Add a custom agent by giving it a name and instructions. Upload a .md / .txt file or paste directly.' }}</p>
           <mat-form-field appearance="outline" class="import-name-field">
             <mat-label>Agent name</mat-label>
             <input matInput [(ngModel)]="importName" maxlength="40" />
@@ -88,8 +141,13 @@
             </button>
             <input #fileInput type="file" accept=".md,.txt,.markdown" hidden (change)="onFileSelected($event)" />
             <button mat-flat-button color="primary" [disabled]="!importText.trim() || !importName.trim()" (click)="applyImport()">
-              <mat-icon>add</mat-icon> Add Agent
+              <mat-icon>{{ editingAgentId() ? 'save' : 'add' }}</mat-icon> {{ editingAgentId() ? 'Save Agent' : 'Add Agent' }}
             </button>
+            @if (editingAgentId()) {
+              <button mat-stroked-button (click)="cancelEdit()">
+                <mat-icon>close</mat-icon> Cancel
+              </button>
+            }
           </div>
         </div>
       }
@@ -112,6 +170,7 @@
             @if (isAgentActive(agent.id)) {
               <mat-icon class="chip-check">check_circle</mat-icon>
             }
+            <mat-icon class="chip-edit" (click)="startEditAgent($event, agent)" (keydown.enter)="startEditAgent($event, agent)" matTooltip="Edit agent" tabindex="0" role="button">edit</mat-icon>
             <mat-icon class="chip-delete" (click)="removeCustomAgent($event, agent.id)" (keydown.enter)="removeCustomAgent($event, agent.id)" matTooltip="Delete agent" tabindex="0" role="button">close</mat-icon>
           </button>
         }

@@ -1,4 +1,3 @@
-/* Layout */
 .chat-layout {
   display: flex;
   gap: 1rem;
@@ -14,7 +13,6 @@
   justify-content: center;
 }
 
-/* Mobile floating buttons (hidden on desktop) */
 .mobile-fabs {
   display: none;
 }
@@ -25,7 +23,6 @@
   color: white;
 }
 
-/* Sidebar */
 .chat-sidebar {
   width: 280px;
   flex-shrink: 0;
@@ -63,6 +60,49 @@
   flex: 1;
   overflow-y: auto;
   padding: 0.5rem;
+}
+
+.tag-group + .tag-group {
+  margin-top: 0.25rem;
+}
+
+.tag-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: lightsalmon;
+}
+
+.tag-group-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.tag-group-name {
+  cursor: pointer;
+}
+
+.tag-name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid currentColor;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  outline: none;
+  width: 100%;
+  padding: 0;
+}
+
+.untagged {
+  font-style: italic;
 }
 
 .conversation-item {
@@ -119,7 +159,7 @@
   opacity: 0.5;
 }
 
-.conv-delete {
+.conv-action {
   opacity: 0;
   transition: opacity 0.15s;
   flex-shrink: 0;
@@ -128,18 +168,31 @@
   line-height: 28px;
 }
 
-.conv-delete mat-icon {
+.conv-action mat-icon,
+.agent-chip mat-icon:first-child,
+.import-error mat-icon {
   font-size: 16px;
   width: 16px;
   height: 16px;
 }
 
-.conversation-item:hover .conv-delete {
+.conversation-item:hover .conv-action {
   opacity: 0.6;
 }
 
-.conv-delete:hover {
+.conv-action:hover {
   opacity: 1 !important;
+}
+
+.conv-title-input {
+  width: 100%;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  border: 1px solid var(--mat-sys-primary, #039be5);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  outline: none;
 }
 
 .no-chats {
@@ -213,7 +266,6 @@
   margin: 0;
 }
 
-/* Messages area */
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -225,7 +277,6 @@
   max-height: calc(100vh - 320px);
 }
 
-/* Empty state */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -253,19 +304,6 @@
   max-width: 400px;
 }
 
-.suggestions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.suggestions button {
-  font-size: 0.85rem;
-}
-
-/* Message rows */
 .message {
   display: flex;
   align-items: flex-start;
@@ -309,7 +347,6 @@
   background: var(--mat-sys-surface-container, #2a2a2a);
 }
 
-/* Typing indicator dots */
 .typing-indicator {
   display: flex;
   gap: 0.3rem;
@@ -337,7 +374,6 @@
   30% { transform: translateY(-6px); opacity: 1; }
 }
 
-/* Error message */
 .error-message {
   display: flex;
   align-items: center;
@@ -347,7 +383,6 @@
   font-size: 0.9rem;
 }
 
-/* Input area */
 .input-area {
   display: flex;
   align-items: center;
@@ -364,7 +399,6 @@
   flex: 1;
 }
 
-/* Mobile adjustments */
 @media (max-width: 768px) {
   .mobile-fabs {
     display: flex;
@@ -416,17 +450,11 @@
     max-width: 90%;
   }
 
-  .suggestions {
-    flex-direction: column;
-    align-items: center;
-  }
-
   .import-btn-text {
     display: none;
   }
 }
 
-/* Agent selection bar */
 .agent-bar {
   display: flex;
   gap: 0.5rem;
@@ -469,12 +497,6 @@
   background: var(--mat-sys-primary-container, #004a77);
 }
 
-.agent-chip mat-icon:first-child {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
 .agent-active {
   border-color: var(--mat-sys-primary, #039be5);
   background: var(--mat-sys-primary-container, #d1eaff);
@@ -486,36 +508,47 @@
   color: var(--mat-sys-on-primary-container, #d1eaff);
 }
 
-.chip-check {
+.chip-check,
+.chip-edit,
+.chip-delete {
   font-size: 14px;
   width: 14px;
   height: 14px;
+}
+
+.chip-check {
   color: var(--mat-sys-primary, #039be5);
+}
+
+.chip-edit,
+.chip-delete {
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.chip-edit {
+  color: var(--mat-sys-primary, #039be5);
+}
+
+.chip-delete {
+  color: var(--mat-sys-error, #d32f2f);
+}
+
+.agent-chip:hover .chip-edit,
+.agent-chip:hover .chip-delete {
+  opacity: 0.7;
+}
+
+.chip-edit:hover,
+.chip-delete:hover {
+  opacity: 1 !important;
 }
 
 .custom-agent-chip {
   border-style: dashed;
 }
 
-.chip-delete {
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  cursor: pointer;
-  color: var(--mat-sys-error, #d32f2f);
-}
-
-.agent-chip:hover .chip-delete {
-  opacity: 0.7;
-}
-
-.chip-delete:hover {
-  opacity: 1 !important;
-}
-
-/* Import instructions panel */
 .import-panel {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
@@ -534,10 +567,7 @@
   opacity: 0.7;
 }
 
-.import-name-field {
-  width: 100%;
-}
-
+.import-name-field,
 .import-textarea-field {
   width: 100%;
 }
@@ -549,12 +579,6 @@
   color: var(--mat-sys-error, #d32f2f);
   font-size: 0.8rem;
   padding: 0.25rem 0;
-}
-
-.import-error mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
 }
 
 .import-actions {

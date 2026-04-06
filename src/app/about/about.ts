@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, signal, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -12,7 +12,8 @@ const JAX_BIRTHDAY = new Date(2017, 8, 28); // September 28, 2017
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
-export class About {
+export class About implements OnInit {
+  readonly showContent = signal(false);
   readonly birthday = 'September 24, 2025';
   readonly thunderBirthday = 'August 24, 2019';
   readonly jaxBirthday = 'September 28, 2017';
@@ -20,6 +21,16 @@ export class About {
   readonly age = computed(() => this.calcAge(WINSTON_BIRTHDAY));
   readonly thunderAge = computed(() => this.calcAge(THUNDER_BIRTHDAY));
   readonly jaxAge = computed(() => this.calcAge(JAX_BIRTHDAY));
+
+  ngOnInit() {
+    setTimeout(() => this.showContent.set(true), 7000);
+  }
+
+  onVideoEnded(event: Event) {
+    const video = event.target as HTMLVideoElement;
+    video.currentTime = video.duration;
+    video.pause();
+  }
 
   private calcAge(birthday: Date): string {
     const now = new Date();

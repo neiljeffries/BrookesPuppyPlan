@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,8 +6,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription } from 'rxjs';
-import { AuthService } from '../auth.service';
 import { firebaseApp, db, ref, get, set } from '../firebase';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 
@@ -17,21 +15,12 @@ import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit, OnDestroy {
-  private readonly auth = inject(AuthService);
-  private barkSub?: Subscription;
-
-  readonly barkBubbles = signal<number[]>([]);
+export class Home implements OnInit {
   readonly dailyQuote = signal<string>('');
   readonly quoteLoading = signal(false);
 
   ngOnInit(): void {
-    this.barkSub = this.auth.bark$.subscribe(() => this.showBarkBubbles());
     this.loadQuote();
-  }
-
-  ngOnDestroy(): void {
-    this.barkSub?.unsubscribe();
   }
 
   async loadQuote(): Promise<void> {
@@ -73,24 +62,4 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  onPuppyClick(): void {
-    if (this.barkBubbles().length) return;
-    this.auth.playBark();
-  }
-
-  private showBarkBubbles(): void {
-    const ids: number[] = [];
-    const delays = [800, 1400, 2300];
-    for (let i = 0; i < 3; i++) {
-      const id = Date.now() + i;
-      setTimeout(() => {
-        ids.push(id);
-        this.barkBubbles.set([...ids]);
-      }, delays[i]);
-    }
-    // Remove all bubbles after last one has had time to animate
-    setTimeout(() => {
-      this.barkBubbles.set([]);
-    }, delays[2] + 800);
-  }
 }

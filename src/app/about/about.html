@@ -1,4 +1,16 @@
-<div class="about-container">
+<div class="video-bg">
+  <video
+    autoplay
+    [muted]="true"
+    playsinline
+    (ended)="onVideoEnded($event)"
+    class="bg-video"
+  >
+    <source src="winston_lightsaber.mp4" type="video/mp4" />
+  </video>
+</div>
+
+<div class="about-container" [class.visible]="showContent()">
   <mat-card>
     <mat-card-header>
       <mat-icon mat-card-avatar class="about-icon icon-blue">info</mat-icon>
@@ -41,7 +53,7 @@
     <mat-card-header>
       <mat-icon mat-card-avatar class="about-icon icon-gray">pets</mat-icon>
       <mat-card-title>Thunder</mat-card-title>
-      <mat-card-subtitle>Our Gray Tiger Tabby</mat-card-subtitle>
+      <mat-card-subtitle>Tabby</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <div class="winston-details">
@@ -67,7 +79,7 @@
     <mat-card-header>
       <mat-icon mat-card-avatar class="about-icon icon-orange">pets</mat-icon>
       <mat-card-title>Jax</mat-card-title>
-      <mat-card-subtitle>Our Pumpkin Tabby</mat-card-subtitle>
+      <mat-card-subtitle>Tabby</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <div class="winston-details">

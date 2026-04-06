@@ -39,6 +39,13 @@ export class Chat implements OnInit {
   importText = '';
   importName = '';
   importError = signal('');
+  editingAgentId = signal<string | null>(null);
+  editingConvId = signal<string | null>(null);
+  editingConvTitle = '';
+  taggingConvId = signal<string | null>(null);
+  taggingConvValue = '';
+  editingTag = signal<string | null>(null);
+  editingTagValue = '';
 
   get messages() {
     return this.chatService.messages();
@@ -49,6 +56,7 @@ export class Chat implements OnInit {
   }
 
   conversations = this.chatService.conversations;
+  groupedConversations = this.chatService.groupedConversations;
   customInstruction = this.chatService.customInstruction;
 
   ngOnInit() {
@@ -105,7 +113,90 @@ export class Chat implements OnInit {
 
   deleteChat(event: Event, id: string) {
     event.stopPropagation();
-    this.chatService.deleteConversation(id);
+    if (confirm('Are you sure you want to delete this conversation?')) {
+      this.chatService.deleteConversation(id);
+    }
+  }
+
+  startEditConv(event: Event, conv: { id: string; title: string }) {
+    event.stopPropagation();
+    this.editingConvId.set(conv.id);
+    this.editingConvTitle = conv.title;
+  }
+
+  saveConvTitle(event: Event) {
+    event.stopPropagation();
+    const id = this.editingConvId();
+    if (id && this.editingConvTitle.trim()) {
+      this.chatService.renameConversation(id, this.editingConvTitle);
+    }
+    this.editingConvId.set(null);
+  }
+
+  cancelEditConv(event: Event) {
+    event.stopPropagation();
+    this.editingConvId.set(null);
+  }
+
+  onConvTitleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.saveConvTitle(event);
+    } else if (event.key === 'Escape') {
+      this.cancelEditConv(event);
+    }
+  }
+
+  startTagConv(event: Event, conv: { id: string; tag?: string }) {
+    event.stopPropagation();
+    this.taggingConvId.set(conv.id);
+    this.taggingConvValue = conv.tag || '';
+  }
+
+  saveConvTag(event: Event) {
+    event.stopPropagation();
+    const id = this.taggingConvId();
+    if (id) {
+      this.chatService.tagConversation(id, this.taggingConvValue);
+    }
+    this.taggingConvId.set(null);
+  }
+
+  cancelTagConv(event: Event) {
+    event.stopPropagation();
+    this.taggingConvId.set(null);
+  }
+
+  onConvTagKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.saveConvTag(event);
+    } else if (event.key === 'Escape') {
+      this.cancelTagConv(event);
+    }
+  }
+
+  startEditTag(tag: string) {
+    this.editingTag.set(tag);
+    this.editingTagValue = tag;
+  }
+
+  saveEditTag() {
+    const oldTag = this.editingTag();
+    if (oldTag !== null) {
+      this.chatService.renameTag(oldTag, this.editingTagValue);
+    }
+    this.editingTag.set(null);
+  }
+
+  cancelEditTag() {
+    this.editingTag.set(null);
+  }
+
+  onEditTagKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.saveEditTag();
+    } else if (event.key === 'Escape') {
+      this.cancelEditTag();
+    }
   }
 
   applyImport() {
@@ -115,7 +206,10 @@ export class Chat implements OnInit {
       this.importError.set('Both a name and instructions are required.');
       return;
     }
-    const result = this.chatService.addCustomAgent(name, text);
+    const editId = this.editingAgentId();
+    const result = editId
+      ? this.chatService.editCustomAgent(editId, name, text)
+      : this.chatService.addCustomAgent(name, text);
     if (!result.valid) {
       this.importError.set(result.error!);
       return;
@@ -123,6 +217,7 @@ export class Chat implements OnInit {
     this.importText = '';
     this.importName = '';
     this.importError.set('');
+    this.editingAgentId.set(null);
     this.importOpen.set(false);
   }
 
@@ -145,7 +240,30 @@ export class Chat implements OnInit {
 
   removeCustomAgent(event: Event, agentId: string) {
     event.stopPropagation();
+    const agent = this.customAgents.find(a => a.id === agentId);
+    const name = agent?.name ?? 'this agent';
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     this.chatService.removeCustomAgent(agentId);
+    if (this.editingAgentId() === agentId) {
+      this.cancelEdit();
+    }
+  }
+
+  startEditAgent(event: Event, agent: { id: string; name: string; instruction: string }) {
+    event.stopPropagation();
+    this.editingAgentId.set(agent.id);
+    this.importName = agent.name;
+    this.importText = agent.instruction;
+    this.importError.set('');
+    this.importOpen.set(true);
+  }
+
+  cancelEdit() {
+    this.editingAgentId.set(null);
+    this.importName = '';
+    this.importText = '';
+    this.importError.set('');
+    this.importOpen.set(false);
   }
 
   toggleAgent(agentId: string) {
