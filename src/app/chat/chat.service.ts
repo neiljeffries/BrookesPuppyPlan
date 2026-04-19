@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firebaseApp, db, ref, get, set, update, push, remove } from '../firebase';
-import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
+import { getAI, getGenerativeModel, GoogleAIBackend, ResponseModality } from 'firebase/ai';
 import type { ChatSession, GenerativeModel, AI } from 'firebase/ai';
 import { AuthService } from '../auth.service';
 
@@ -307,10 +307,23 @@ export interface ChatAttachment {
   previewUrl?: string; // object URL for image previews
 }
 
+export interface GeneratedImage {
+  mimeType: string;
+  base64: string;
+}
+
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   attachments?: ChatAttachment[];
+  pinned?: boolean;
+  generatedImages?: GeneratedImage[];
+}
+
+export interface MemoryFact {
+  id: string;
+  text: string;
+  createdAt: number;
 }
 
 export interface ConversationSummary {
@@ -338,9 +351,20 @@ export class ChatService {
   readonly customInstruction = signal<string>('');
   readonly activeAgentIds = signal<string[]>(['yorkie-expert']);
   readonly customAgents = signal<AgentDef[]>([]);
+  readonly streamingText = signal<string>('');
+  readonly isStreaming = signal(false);
+  readonly memoryFacts = signal<MemoryFact[]>([]);
+  readonly searchQuery = signal('');
+  readonly imageMode = signal(false);
 
-  readonly groupedConversations = computed<TagGroup[]>(() => {
-    const convs = this.conversations();
+  readonly filteredConversations = computed<ConversationSummary[]>(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.conversations();
+    return this.conversations().filter(c => c.title.toLowerCase().includes(q));
+  });
+
+  readonly filteredGroupedConversations = computed<TagGroup[]>(() => {
+    const convs = this.filteredConversations();
     const groups = new Map<string, ConversationSummary[]>();
     for (const c of convs) {
       const tag = c.tag || '';
@@ -348,7 +372,6 @@ export class ChatService {
       groups.get(tag)!.push(c);
     }
     const result: TagGroup[] = [];
-    // Named tags first (alphabetical), untagged last
     const sorted = [...groups.keys()].sort((a, b) => {
       if (!a) return 1;
       if (!b) return -1;
@@ -364,6 +387,113 @@ export class ChatService {
     this.ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
     this.model = this.buildModel('');
     this.startNewChat([]);
+  }
+
+  toggleImageMode() {
+    this.imageMode.update(v => !v);
+  }
+
+  async generateImage(prompt: string, attachments?: ChatAttachment[]): Promise<GeneratedImage[]> {
+    const userMsg: ChatMessage = { role: 'user', text: prompt };
+    if (attachments?.length) userMsg.attachments = attachments;
+    this.messages.update(msgs => [...msgs, userMsg]);
+
+    const imageModel = getGenerativeModel(this.ai, {
+      model: 'gemini-2.5-flash-image',
+      generationConfig: {
+        responseModalities: [ResponseModality.TEXT, ResponseModality.IMAGE],
+      },
+    });
+
+    // Build multi-turn history from all image-related messages in this conversation
+    const history: { role: string; parts: any[] }[] = [];
+    const allMsgs = this.messages();
+    for (const msg of allMsgs) {
+      const parts: any[] = [];
+      if (msg.text) parts.push({ text: msg.text });
+      // Include user-attached images
+      if (msg.attachments?.length) {
+        for (const att of msg.attachments) {
+          if (att.data) {
+            parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
+          }
+        }
+      }
+      // Include model-generated images
+      if (msg.generatedImages?.length) {
+        for (const img of msg.generatedImages) {
+          parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } });
+        }
+      }
+      if (parts.length) {
+        history.push({ role: msg.role, parts });
+      }
+    }
+
+    // If the latest user message has no attachments and no prior images in history,
+    // nothing extra to do — the history already captures everything.
+    // If there ARE no prior generated images and no attachments, this is a fresh generation.
+
+    const result = await imageModel.generateContent({ contents: history as any });
+    const response = result.response;
+    const images: GeneratedImage[] = [];
+    let text = '';
+
+    const responseParts = response.candidates?.[0]?.content?.parts || [];
+    for (const part of responseParts) {
+      if (part.text) {
+        text += part.text;
+      } else if (part.inlineData) {
+        images.push({
+          mimeType: part.inlineData.mimeType,
+          base64: part.inlineData.data,
+        });
+      }
+    }
+
+    const modelMsg: ChatMessage = {
+      role: 'model',
+      text,
+      generatedImages: images,
+    };
+    this.messages.update(msgs => [...msgs, modelMsg]);
+
+    await this.saveConversation();
+    return images;
+  }
+
+  /* ── Persistent Memory ── */
+
+  async loadMemory() {
+    const uid = this.uid;
+    if (!uid) return;
+    const snapshot = await get(ref(db, `settings/${uid}/memory`));
+    const data = snapshot.val();
+    if (!data) { this.memoryFacts.set([]); return; }
+    const facts: MemoryFact[] = Object.entries(data).map(([id, val]: [string, any]) => ({
+      id, text: val.text || '', createdAt: val.createdAt || 0,
+    }));
+    facts.sort((a, b) => a.createdAt - b.createdAt);
+    this.memoryFacts.set(facts);
+    this.rebuildModel();
+  }
+
+  async addMemoryFact(text: string) {
+    const uid = this.uid;
+    if (!uid || !text.trim()) return;
+    const id = 'mem-' + Date.now().toString(36);
+    const fact: MemoryFact = { id, text: text.trim(), createdAt: Date.now() };
+    this.memoryFacts.update(list => [...list, fact]);
+    await set(ref(db, `settings/${uid}/memory/${id}`), { text: fact.text, createdAt: fact.createdAt });
+    this.rebuildModel();
+  }
+
+  async removeMemoryFact(id: string) {
+    const uid = this.uid;
+    if (!uid) return;
+    this.memoryFacts.update(list => list.filter(f => f.id !== id));
+    await remove(ref(db, `settings/${uid}/memory/${id}`));
+    this.rebuildModel();
   }
 
   private get uid(): string | null {
@@ -382,6 +512,13 @@ export class ChatService {
     }
 
     if (extra) parts.push(`## Additional Instructions\n\n${extra}`);
+
+    // Inject persistent memory facts
+    const facts = this.memoryFacts();
+    if (facts.length > 0) {
+      const memLines = facts.map(f => `- ${f.text}`).join('\n');
+      parts.push(`## Remembered Facts About This User\n\n${memLines}`);
+    }
 
     return getGenerativeModel(this.ai, {
       model: 'gemini-3.1-pro-preview',
@@ -514,18 +651,25 @@ export class ChatService {
 
   private startNewChat(history: ChatMessage[]) {
     this.chat = this.model.startChat({
-      history: history.map(m => {
-        const parts: any[] = [];
-        if (m.attachments) {
-          for (const att of m.attachments) {
-            if (att.data) {
-              parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
+      history: history
+        .map(m => {
+          const parts: any[] = [];
+          if (m.attachments) {
+            for (const att of m.attachments) {
+              if (att.data) {
+                parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
+              }
             }
           }
-        }
-        if (m.text) parts.push({ text: m.text });
-        return { role: m.role, parts };
-      }),
+          if (m.text) {
+            parts.push({ text: m.text });
+          } else if (m.generatedImages?.length) {
+            // Image-only model messages need a text placeholder to keep history valid
+            parts.push({ text: '[Generated image]' });
+          }
+          return { role: m.role, parts };
+        })
+        .filter(m => m.parts.length > 0),
     });
   }
 
@@ -559,10 +703,38 @@ export class ChatService {
     const data = snapshot.val();
     if (!data) return;
 
-    const messages: ChatMessage[] = data.messages || [];
+    // Firebase RTDB may return arrays or sparse objects — normalise to array
+    const raw = data.messages || [];
+    const messages: ChatMessage[] = (Array.isArray(raw)
+      ? raw
+      : Object.values(raw)
+    ).filter(Boolean).map((m: any) => {
+      const msg: ChatMessage = { role: m.role, text: m.text || '' };
+      if (m.pinned) msg.pinned = m.pinned;
+      if (m.attachments) {
+        msg.attachments = Array.isArray(m.attachments)
+          ? m.attachments
+          : Object.values(m.attachments);
+      }
+      if (m.generatedImages) {
+        msg.generatedImages = Array.isArray(m.generatedImages)
+          ? m.generatedImages
+          : Object.values(m.generatedImages);
+      }
+      return msg;
+    });
+
     this.messages.set(messages);
     this.currentConversationId.set(conversationId);
-    this.startNewChat(messages);
+    try {
+      this.startNewChat(messages);
+    } catch (e) {
+      console.error('[switchConversation] startNewChat failed:', e);
+      console.error('[switchConversation] history sent:', JSON.stringify(
+        messages.map(m => ({ role: m.role, textLen: m.text?.length ?? 0, hasImages: !!m.generatedImages?.length, hasAttachments: !!m.attachments?.length }))
+      ));
+      throw e;
+    }
   }
 
   newConversation() {
@@ -630,13 +802,18 @@ export class ChatService {
     let conversationId = this.currentConversationId();
     const title = msgs[0].text.substring(0, 50) + (msgs[0].text.length > 50 ? '…' : '');
 
-    // Strip base64 data before persisting — too large for RTDB
+    // Strip base64 data and undefined values before persisting — too large for RTDB
     const persistMsgs = msgs.map(m => {
-      if (!m.attachments?.length) return m;
-      return {
-        ...m,
-        attachments: m.attachments.map(({ data, previewUrl, ...rest }) => rest),
-      };
+      const clean: any = { role: m.role, text: m.text };
+      if (m.pinned) clean.pinned = m.pinned;
+      if (m.generatedImages?.length) clean.generatedImages = m.generatedImages;
+      if (m.attachments?.length) {
+        clean.attachments = m.attachments.map(a => {
+          const att: any = { name: a.name, mimeType: a.mimeType };
+          return att;
+        });
+      }
+      return clean;
     });
 
     if (!conversationId) {
@@ -685,18 +862,95 @@ export class ChatService {
     }
     if (userMessage) parts.push({ text: userMessage });
 
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out. Check that the Gemini API is enabled in your Firebase console.')), 30000)
-    );
+    // Stream the response
+    this.isStreaming.set(true);
+    this.streamingText.set('');
+    let fullText = '';
 
-    const result = await Promise.race([this.chat!.sendMessage(parts), timeout]);
-    const responseText = result.response.text();
+    try {
+      const streamResult = await this.chat!.sendMessageStream(parts);
+      for await (const chunk of streamResult.stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
+        this.streamingText.set(fullText);
+      }
+    } catch (e) {
+      this.isStreaming.set(false);
+      this.streamingText.set('');
+      throw e;
+    }
 
-    this.messages.update(msgs => [...msgs, { role: 'model', text: responseText }]);
+    this.isStreaming.set(false);
+    this.streamingText.set('');
+    this.messages.update(msgs => [...msgs, { role: 'model', text: fullText }]);
 
     await this.saveConversation();
 
-    return responseText;
+    return fullText;
+  }
+
+  /* ── Pin / Bookmark ── */
+
+  togglePin(index: number) {
+    this.messages.update(msgs =>
+      msgs.map((m, i) => i === index ? { ...m, pinned: !m.pinned } : m)
+    );
+    // Persist pin state
+    this.saveConversation();
+  }
+
+  getPinnedMessages(): (ChatMessage & { index: number })[] {
+    return this.messages()
+      .map((m, i) => ({ ...m, index: i }))
+      .filter(m => m.pinned);
+  }
+
+  /* ── Conversation Summarization ── */
+
+  async summarizeConversation(conversationId: string): Promise<string> {
+    const uid = this.uid;
+    if (!uid) return '';
+    const msgs = this.messages();
+    if (msgs.length === 0) return '';
+
+    const transcript = msgs.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join('\n');
+    const summaryModel = getGenerativeModel(this.ai, { model: 'gemini-3.1-pro-preview' });
+    const result = await summaryModel.generateContent(
+      `Summarize this conversation in a short, descriptive title (max 60 characters). Return only the title, nothing else.\n\n${transcript}`
+    );
+    const title = result.response.text().trim().replace(/^["']|["']$/g, '');
+
+    if (title) {
+      await this.renameConversation(conversationId, title);
+    }
+    return title;
+  }
+
+  /* ── Export ── */
+
+  exportAsMarkdown(): string {
+    const msgs = this.messages();
+    const conv = this.conversations().find(c => c.id === this.currentConversationId());
+    const title = conv?.title || 'Chat Export';
+    const lines = [`# ${title}\n`, `*Exported ${new Date().toLocaleString()}*\n`];
+    for (const msg of msgs) {
+      const prefix = msg.role === 'user' ? '**You**' : '**Assistant**';
+      if (msg.pinned) lines.push('> \u{1F4CC} Pinned');
+      lines.push(`${prefix}:\n${msg.text}\n`);
+    }
+    return lines.join('\n');
+  }
+
+  downloadExport() {
+    const md = this.exportAsMarkdown();
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const conv = this.conversations().find(c => c.id === this.currentConversationId());
+    a.download = `${(conv?.title || 'chat').replace(/[^a-zA-Z0-9]/g, '_')}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   clearHistory() {

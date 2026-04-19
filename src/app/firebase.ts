@@ -17,14 +17,13 @@ const firebaseConfig = {
 
 export const firebaseApp = initializeApp(firebaseConfig);
 
-// Enable App Check for Firebase AI
-if (globalThis.window !== undefined && location.hostname === 'localhost') {
-  (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+// Enable App Check for Firebase AI (skip in local development to avoid debug token 403s)
+if (typeof window !== 'undefined' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+  initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaV3Provider('6Lc6iJwsAAAAAAU_Ig9_YNqedfZ0Tk_UiDP_Pblk'),
+    isTokenAutoRefreshEnabled: true,
+  });
 }
-initializeAppCheck(firebaseApp, {
-  provider: new ReCaptchaV3Provider('6Lc6iJwsAAAAAAU_Ig9_YNqedfZ0Tk_UiDP_Pblk'),
-  isTokenAutoRefreshEnabled: true,
-});
 
 export const db = getDatabase(firebaseApp);
 export const storage = getStorage(firebaseApp);

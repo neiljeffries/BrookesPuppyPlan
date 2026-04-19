@@ -17,34 +17,50 @@
         <mat-icon>add</mat-icon>
       </button>
     </div>
+    <div class="sidebar-search">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Search chats…" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+      </mat-form-field>
+    </div>
     <div class="conversation-list">
       @for (group of groupedConversations(); track group.tag) {
-        <div class="tag-group">
+        <div class="tag-group"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event, group.tag)">
           @if (group.tag) {
-            <div class="tag-group-header">
+            <div class="tag-group-header" (click)="toggleTagCollapse(group.tag)">
+              <mat-icon class="tag-collapse-icon" [class.collapsed]="isTagCollapsed(group.tag)">expand_more</mat-icon>
               <mat-icon class="tag-group-icon">label</mat-icon>
               @if (editingTag() === group.tag) {
                 <input class="tag-name-input"
                        [(ngModel)]="editingTagValue"
                        (keydown)="onEditTagKeydown($event)"
                        (blur)="saveEditTag()"
+                       (click)="$event.stopPropagation()"
                        maxlength="30"
                        autofocus />
               } @else {
-                <span class="tag-group-name" (click)="startEditTag(group.tag)" (keydown.enter)="startEditTag(group.tag)" tabindex="0">{{ group.tag }}</span>
+                <span class="tag-group-name" (click)="startEditTag(group.tag); $event.stopPropagation()" (keydown.enter)="startEditTag(group.tag)" tabindex="0">{{ group.tag }}</span>
               }
             </div>
           } @else {
             @if (groupedConversations().length > 1) {
-              <div class="tag-group-header">
+              <div class="tag-group-header" (click)="toggleTagCollapse('')">
+                <mat-icon class="tag-collapse-icon" [class.collapsed]="isTagCollapsed('')">expand_more</mat-icon>
                 <mat-icon class="tag-group-icon">label_off</mat-icon>
                 <span class="tag-group-name untagged">Untagged</span>
               </div>
             }
           }
+          @if (!isTagCollapsed(group.tag)) {
           @for (conv of group.conversations; track conv.id) {
             <div class="conversation-item"
                  [class.active]="conv.id === chatService.currentConversationId()"
+                 draggable="true"
+                 (dragstart)="onDragStart($event, conv.id)"
+                 (dragend)="onDragEnd($event)"
                  (click)="switchChat(conv.id)">
               <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
               <div class="conv-info">
@@ -83,6 +99,7 @@
               </button>
             </div>
           }
+          }
         </div>
       } @empty {
         <div class="no-chats">
@@ -106,16 +123,60 @@
         <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 3.1</mat-card-title>
         <mat-card-subtitle>Select agents to customize your chat</mat-card-subtitle>
         <span class="spacer"></span>
+        <button mat-icon-button (click)="memoryPanelOpen.set(!memoryPanelOpen())" matTooltip="Persistent memory" aria-label="Persistent memory">
+          <mat-icon>{{ memoryPanelOpen() ? 'close' : 'psychology_alt' }}</mat-icon>
+        </button>
         <button mat-stroked-button (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())" aria-label="Import custom instructions">
           <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
           <span class="import-btn-text">{{ importOpen() ? 'Close' : 'Import Agent' }}</span>
         </button>
         @if (messages.length) {
+          <button mat-icon-button (click)="exportChat()" matTooltip="Export chat" aria-label="Export chat">
+            <mat-icon>download</mat-icon>
+          </button>
+          @if (chatService.currentConversationId()) {
+            <button mat-icon-button (click)="summarizeChat()" matTooltip="Auto-summarize title" aria-label="Summarize">
+              <mat-icon>auto_fix_high</mat-icon>
+            </button>
+          }
+          <button mat-icon-button (click)="togglePinnedView()" [matTooltip]="showPinnedOnly() ? 'Show all messages' : 'Show pinned only'" aria-label="Toggle pinned view">
+            <mat-icon>{{ showPinnedOnly() ? 'push_pin' : 'outlined_flag' }}</mat-icon>
+          </button>
           <button mat-icon-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">
             <mat-icon>delete_outline</mat-icon>
           </button>
         }
       </mat-card-header>
+
+      <!-- Memory panel -->
+      @if (memoryPanelOpen()) {
+        <div class="memory-panel">
+          <p class="import-hint">Persistent facts are injected into the system prompt so the AI remembers them across conversations.</p>
+          <div class="memory-input-row">
+            <mat-form-field appearance="outline" class="memory-input-field">
+              <mat-label>Add a fact…</mat-label>
+              <input matInput [(ngModel)]="memoryInput" (keydown.enter)="addMemoryFact()" />
+            </mat-form-field>
+            <button mat-icon-button color="primary" (click)="addMemoryFact()" [disabled]="!memoryInput.trim()" matTooltip="Add fact">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+          @if (chatService.memoryFacts().length) {
+            <div class="memory-facts">
+              @for (fact of chatService.memoryFacts(); track fact.id) {
+                <div class="memory-fact-item">
+                  <span class="memory-fact-text">{{ fact.text }}</span>
+                  <button mat-icon-button class="memory-fact-remove" (click)="removeMemoryFact(fact.id)" matTooltip="Remove">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="memory-empty">No facts stored yet.</p>
+          }
+        </div>
+      }
 
       <!-- Import agent panel -->
       @if (importOpen()) {
@@ -188,8 +249,8 @@
           </div>
         }
 
-        @for (msg of messages; track $index) {
-          <div class="message" [class.user-message]="msg.role === 'user'" [class.model-message]="msg.role === 'model'">
+        @for (msg of displayMessages; track $index) {
+          <div class="message" [class.user-message]="msg.role === 'user'" [class.model-message]="msg.role === 'model'" [class.pinned-message]="msg.pinned">
             @if (msg.role === 'model') {
               <mat-icon class="message-icon">pets</mat-icon>
             }
@@ -208,7 +269,50 @@
                   }
                 </div>
               }
-              <div class="message-bubble">{{ msg.text }}</div>
+              @if (msg.generatedImages?.length) {
+                <div class="generated-images">
+                  @for (img of msg.generatedImages; track $index) {
+                    <div class="generated-image-wrapper">
+                      <img [src]="'data:' + img.mimeType + ';base64,' + img.base64" alt="Generated image" class="generated-image" />
+                      <button mat-icon-button class="generated-img-download" (click)="downloadGeneratedImage(img.base64, img.mimeType)" matTooltip="Download image">
+                        <mat-icon>download</mat-icon>
+                      </button>
+                      <button mat-icon-button class="generated-img-edit" (click)="editImage()" matTooltip="Edit this image">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+              @if (msg.role === 'model' && msg.text) {
+                <div class="message-bubble markdown-body" [innerHTML]="renderMarkdown(msg.text)"></div>
+                @if (extractUrls(msg.text).length) {
+                  <div class="link-previews">
+                    @for (link of extractUrls(msg.text); track link.url) {
+                      <a class="link-preview-card" [href]="link.url" target="_blank" rel="noopener noreferrer">
+                        <img class="link-preview-favicon" [src]="link.favicon" alt="" width="20" height="20" />
+                        <div class="link-preview-info">
+                          <span class="link-preview-domain">{{ link.hostname }}</span>
+                          <span class="link-preview-url">{{ link.url }}</span>
+                        </div>
+                        <mat-icon class="link-preview-arrow">open_in_new</mat-icon>
+                      </a>
+                    }
+                  </div>
+                }
+              } @else if (msg.role === 'model' && !msg.text && !msg.generatedImages?.length) {
+                <div class="message-bubble markdown-body"></div>
+              } @else if (msg.role === 'user') {
+                <div class="message-bubble">{{ msg.text }}</div>
+              }
+              <div class="message-actions">
+                <button mat-icon-button class="msg-action-btn" (click)="copyMessage(msg.text)" matTooltip="Copy">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+                <button mat-icon-button class="msg-action-btn" (click)="togglePin($index)" [matTooltip]="msg.pinned ? 'Unpin' : 'Pin'">
+                  <mat-icon>{{ msg.pinned ? 'push_pin' : 'outlined_flag' }}</mat-icon>
+                </button>
+              </div>
             </div>
             @if (msg.role === 'user') {
               <mat-icon class="message-icon">person</mat-icon>
@@ -216,7 +320,17 @@
           </div>
         }
 
-        @if (loading()) {
+        <!-- Streaming response -->
+        @if (chatService.isStreaming()) {
+          <div class="message model-message">
+            <mat-icon class="message-icon">pets</mat-icon>
+            <div class="message-content">
+              <div class="message-bubble markdown-body" [innerHTML]="streamingHtml()"></div>
+            </div>
+          </div>
+        }
+
+        @if (loading() && !chatService.isStreaming()) {
           <div class="message model-message">
             <mat-icon class="message-icon">pets</mat-icon>
             <div class="message-bubble typing-indicator">
@@ -256,15 +370,21 @@
           <button mat-icon-button (click)="openAttachPicker()" [disabled]="loading()" matTooltip="Attach photo or document" aria-label="Attach file" class="attach-btn">
             <mat-icon>attach_file</mat-icon>
           </button>
+          <button mat-icon-button (click)="chatService.toggleImageMode()" [class.image-mode-active]="chatService.imageMode()" [matTooltip]="chatService.imageMode() ? 'Switch to chat mode' : 'Switch to image generation'" aria-label="Toggle image generation" class="image-mode-btn">
+            <mat-icon>{{ chatService.imageMode() ? 'brush' : 'image' }}</mat-icon>
+          </button>
           <input #chatAttachInput type="file" [accept]="ACCEPTED_TYPES" multiple hidden (change)="onAttachFiles($event)" />
           <mat-form-field class="input-field" appearance="outline">
-            <mat-label>Ask about your Yorkie…</mat-label>
+            <mat-label>{{ chatService.imageMode() ? 'Describe an image to generate…' : 'Ask about your Yorkie…' }}</mat-label>
             <input matInput
                    [(ngModel)]="userInput"
                    (keydown)="onKeydown($event)"
                    [disabled]="loading()"
                    autocomplete="off" />
           </mat-form-field>
+          <button mat-icon-button (click)="toggleVoiceInput()" [disabled]="loading()" [class.voice-active]="isListening()" [matTooltip]="isListening() ? 'Stop listening' : 'Voice input'" aria-label="Voice input" class="voice-btn">
+            <mat-icon>{{ isListening() ? 'mic_off' : 'mic' }}</mat-icon>
+          </button>
           <button mat-fab color="primary" (click)="send()" [disabled]="(!userInput.trim() && !pendingAttachments().length) || loading()" aria-label="Send message">
             <mat-icon>send</mat-icon>
           </button>
