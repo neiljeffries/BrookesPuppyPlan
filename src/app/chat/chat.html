@@ -103,7 +103,7 @@
     <mat-card class="chat-card">
       <mat-card-header>
         <mat-icon mat-card-avatar class="chat-avatar">pets</mat-icon>
-        <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 2.5</mat-card-title>
+        <mat-card-title>Yorkie Agent <svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 3.1</mat-card-title>
         <mat-card-subtitle>Select agents to customize your chat</mat-card-subtitle>
         <span class="spacer"></span>
         <button mat-stroked-button (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())" aria-label="Import custom instructions">
@@ -193,7 +193,23 @@
             @if (msg.role === 'model') {
               <mat-icon class="message-icon">pets</mat-icon>
             }
-            <div class="message-bubble">{{ msg.text }}</div>
+            <div class="message-content">
+              @if (msg.attachments?.length) {
+                <div class="message-attachments">
+                  @for (att of msg.attachments; track $index) {
+                    @if (isImage(att.mimeType) && att.previewUrl) {
+                      <img [src]="att.previewUrl" [alt]="att.name" class="msg-attachment-img" />
+                    } @else {
+                      <span class="msg-attachment-chip">
+                        <mat-icon>{{ isImage(att.mimeType) ? 'image' : 'description' }}</mat-icon>
+                        {{ att.name }}
+                      </span>
+                    }
+                  }
+                </div>
+              }
+              <div class="message-bubble">{{ msg.text }}</div>
+            </div>
             @if (msg.role === 'user') {
               <mat-icon class="message-icon">person</mat-icon>
             }
@@ -218,17 +234,41 @@
       </mat-card-content>
 
       <mat-card-actions class="input-area">
-        <mat-form-field class="input-field" appearance="outline">
-          <mat-label>Ask about your Yorkie…</mat-label>
-          <input matInput
-                 [(ngModel)]="userInput"
-                 (keydown)="onKeydown($event)"
-                 [disabled]="loading()"
-                 autocomplete="off" />
-        </mat-form-field>
-        <button mat-fab color="primary" (click)="send()" [disabled]="!userInput.trim() || loading()" aria-label="Send message">
-          <mat-icon>send</mat-icon>
-        </button>
+        <!-- Pending attachments -->
+        @if (pendingAttachments().length) {
+          <div class="pending-attachments">
+            @for (att of pendingAttachments(); track $index) {
+              <div class="pending-att-item">
+                @if (isImage(att.mimeType) && att.previewUrl) {
+                  <img [src]="att.previewUrl" [alt]="att.name" class="pending-att-thumb" />
+                } @else {
+                  <mat-icon class="pending-att-icon">description</mat-icon>
+                }
+                <span class="pending-att-name">{{ att.name }}</span>
+                <button mat-icon-button class="pending-att-remove" (click)="removeAttachment($index)" aria-label="Remove attachment">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+        <div class="input-row">
+          <button mat-icon-button (click)="openAttachPicker()" [disabled]="loading()" matTooltip="Attach photo or document" aria-label="Attach file" class="attach-btn">
+            <mat-icon>attach_file</mat-icon>
+          </button>
+          <input #chatAttachInput type="file" [accept]="ACCEPTED_TYPES" multiple hidden (change)="onAttachFiles($event)" />
+          <mat-form-field class="input-field" appearance="outline">
+            <mat-label>Ask about your Yorkie…</mat-label>
+            <input matInput
+                   [(ngModel)]="userInput"
+                   (keydown)="onKeydown($event)"
+                   [disabled]="loading()"
+                   autocomplete="off" />
+          </mat-form-field>
+          <button mat-fab color="primary" (click)="send()" [disabled]="(!userInput.trim() && !pendingAttachments().length) || loading()" aria-label="Send message">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
       </mat-card-actions>
     </mat-card>
   </div>

@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ChatService, AVAILABLE_AGENTS } from './chat.service';
+import { ChatService, AVAILABLE_AGENTS, ChatAttachment } from './chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -29,6 +29,7 @@ import { ChatService, AVAILABLE_AGENTS } from './chat.service';
 export class Chat implements OnInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLElement>;
   @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('chatAttachInput') private readonly chatAttachInput!: ElementRef<HTMLInputElement>;
   readonly chatService = inject(ChatService);
   readonly agents = AVAILABLE_AGENTS;
   userInput = '';
@@ -46,6 +47,10 @@ export class Chat implements OnInit {
   taggingConvValue = '';
   editingTag = signal<string | null>(null);
   editingTagValue = '';
+  pendingAttachments = signal<ChatAttachment[]>([]);
+
+  readonly ACCEPTED_TYPES = 'image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,text/csv,text/html';
+  private readonly MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
   get messages() {
     return this.chatService.messages();
@@ -67,19 +72,25 @@ export class Chat implements OnInit {
 
   async send() {
     const text = this.userInput.trim();
-    if (!text || this.loading()) return;
+    const attachments = this.pendingAttachments();
+    if ((!text && !attachments.length) || this.loading()) return;
 
     this.userInput = '';
+    this.pendingAttachments.set([]);
     this.error.set('');
     this.loading.set(true);
     this.scrollToBottom();
 
     try {
-      await this.chatService.send(text);
+      await this.chatService.send(text, attachments.length ? attachments : undefined);
     } catch (e: any) {
       console.error('Chat error:', e);
       this.error.set(e.message || 'Something went wrong. Please try again.');
     } finally {
+      // Revoke preview URLs to free memory
+      for (const att of attachments) {
+        if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+      }
       this.loading.set(false);
       this.scrollToBottom();
     }
@@ -279,6 +290,50 @@ export class Chat implements OnInit {
       event.preventDefault();
       this.send();
     }
+  }
+
+  openAttachPicker() {
+    this.chatAttachInput?.nativeElement?.click();
+  }
+
+  onAttachFiles(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files) return;
+
+    for (const file of Array.from(files)) {
+      if (file.size > this.MAX_FILE_SIZE) {
+        this.error.set(`"${file.name}" exceeds the 4 MB limit.`);
+        continue;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        const att: ChatAttachment = {
+          name: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          data: base64,
+        };
+        if (file.type.startsWith('image/')) {
+          att.previewUrl = URL.createObjectURL(file);
+        }
+        this.pendingAttachments.update(list => [...list, att]);
+      };
+      reader.readAsDataURL(file);
+    }
+    input.value = '';
+  }
+
+  removeAttachment(index: number) {
+    this.pendingAttachments.update(list => {
+      const att = list[index];
+      if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+      return list.filter((_, i) => i !== index);
+    });
+  }
+
+  isImage(mimeType: string): boolean {
+    return mimeType.startsWith('image/');
   }
 
   private scrollToBottom() {
