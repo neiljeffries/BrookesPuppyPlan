@@ -26,6 +26,8 @@ export class AuthService {
     map(([user, roles, ready]) => ready && !!user && roles['user'] !== true && roles['admin'] !== true)
   );
 
+  private redirectChecked = false;
+
   constructor() {
     this.init();
     onAuthStateChanged(this.auth, (user) => {
@@ -33,7 +35,7 @@ export class AuthService {
       if (user) {
         this.saveUserProfile(user);
         this.loadRoles(user.uid);
-      } else {
+      } else if (this.redirectChecked) {
         this.rolesSubject.next({});
         this.readySubject.next(true);
       }
@@ -45,12 +47,20 @@ export class AuthService {
     setPersistence(this.auth, browserLocalPersistence).then(() =>
       getRedirectResult(this.auth)
     ).then(result => {
+      this.redirectChecked = true;
       if (result?.user) {
         this.userSubject.next(result.user);
         this.saveUserProfile(result.user);
         this.loadRoles(result.user.uid);
+      } else if (!this.userSubject.value) {
+        this.readySubject.next(true);
       }
-    }).catch(() => {});
+    }).catch(() => {
+      this.redirectChecked = true;
+      if (!this.userSubject.value) {
+        this.readySubject.next(true);
+      }
+    });
   }
 
   private listenForVisibility(): void {
@@ -116,12 +126,16 @@ export class AuthService {
     return this.rolesSubject.value['admin'] === true;
   }
 
+  private isMobile(): boolean {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
   async signInWithGoogle(): Promise<void> {
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(this.auth, provider);
-    } catch {
+    if (this.isMobile()) {
       await signInWithRedirect(this.auth, provider);
+    } else {
+      await signInWithPopup(this.auth, provider);
     }
   }
 

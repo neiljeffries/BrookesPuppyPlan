@@ -349,7 +349,7 @@ export class ChatService {
   readonly conversations = signal<ConversationSummary[]>([]);
   readonly currentConversationId = signal<string | null>(null);
   readonly customInstruction = signal<string>('');
-  readonly activeAgentIds = signal<string[]>(['yorkie-expert']);
+  readonly activeAgentIds = signal<string[]>([]);
   readonly customAgents = signal<AgentDef[]>([]);
   readonly streamingText = signal<string>('');
   readonly isStreaming = signal(false);

@@ -9,7 +9,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChatService, AVAILABLE_AGENTS, ChatAttachment } from './chat.service';
+import { ConfirmDialog } from './confirm-dialog';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -25,6 +27,7 @@ import DOMPurify from 'dompurify';
     MatInputModule,
     MatProgressBarModule,
     MatTooltipModule,
+    MatDialogModule,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
@@ -35,6 +38,7 @@ export class Chat implements OnInit {
   @ViewChild('chatAttachInput') private readonly chatAttachInput!: ElementRef<HTMLInputElement>;
   readonly chatService = inject(ChatService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly dialog = inject(MatDialog);
   readonly agents = AVAILABLE_AGENTS;
   userInput = '';
   loading = signal(false);
@@ -140,8 +144,12 @@ export class Chat implements OnInit {
   }
 
   clear() {
-    this.chatService.clearHistory();
-    this.error.set('');
+    this.confirm('Clear Chat', 'Delete all messages in this conversation? This cannot be undone.', 'Clear', 'delete_outline').then(ok => {
+      if (ok) {
+        this.chatService.clearHistory();
+        this.error.set('');
+      }
+    });
   }
 
   newChat() {
@@ -474,12 +482,16 @@ export class Chat implements OnInit {
   }
 
   exportChat() {
-    this.chatService.downloadExport();
+    this.confirm('Export Chat', 'Download the current conversation as a text file?', 'Download', 'download').then(ok => {
+      if (ok) this.chatService.downloadExport();
+    });
   }
 
   async summarizeChat() {
     const id = this.chatService.currentConversationId();
     if (!id) return;
+    const ok = await this.confirm('Auto-Summarize Title', 'Generate a short title for this conversation using AI?', 'Summarize', 'auto_fix_high');
+    if (!ok) return;
     this.loading.set(true);
     try {
       await this.chatService.summarizeConversation(id);
@@ -496,6 +508,13 @@ export class Chat implements OnInit {
 
   togglePinnedView() {
     this.showPinnedOnly.update(v => !v);
+  }
+
+  private confirm(title: string, message: string, confirmText: string, icon?: string): Promise<boolean> {
+    return this.dialog.open(ConfirmDialog, {
+      data: { title, message, confirmText, icon },
+      width: '360px',
+    }).afterClosed().toPromise().then(result => !!result);
   }
 
   get displayMessages() {

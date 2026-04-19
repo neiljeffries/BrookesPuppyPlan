@@ -41,9 +41,6 @@ export class App {
 
   async signInWithGoogle() {
     await this.auth.signInWithGoogle();
-    if (this.router.url === '/login-required') {
-      this.router.navigate(['/']);
-    }
   }
 
   async signOut() {

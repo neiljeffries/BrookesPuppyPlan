@@ -26,7 +26,6 @@ export class LoginRequired {
 
   async signInWithGoogle(): Promise<void> {
     await this.auth.signInWithGoogle();
-    this.router.navigate(['/']);
   }
 
   async signInWithEmail(): Promise<void> {
