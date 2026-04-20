@@ -906,6 +906,19 @@ export class ChatService {
     return fullText;
   }
 
+  /* ── Delete Generated Image ── */
+
+  deleteGeneratedImage(messageIndex: number, imageIndex: number) {
+    this.messages.update(msgs =>
+      msgs.map((m, i) => {
+        if (i !== messageIndex || !m.generatedImages) return m;
+        const updated = m.generatedImages.filter((_, j) => j !== imageIndex);
+        return { ...m, generatedImages: updated.length ? updated : undefined };
+      })
+    );
+    this.saveConversation();
+  }
+
   /* ── Pin / Bookmark ── */
 
   togglePin(index: number) {

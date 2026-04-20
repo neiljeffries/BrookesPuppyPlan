@@ -549,9 +549,13 @@ export class Chat implements OnInit {
   editImage() {
     if (!this.chatService.imageMode()) this.chatService.toggleImageMode();
     setTimeout(() => {
-      const input = document.querySelector<HTMLInputElement>('.chat-input-row input, .chat-input-row textarea');
+      const input = document.querySelector<HTMLInputElement>('.input-row input[matInput]');
       input?.focus();
     });
+  }
+
+  deleteGeneratedImage(msgIndex: number, imgIndex: number) {
+    this.chatService.deleteGeneratedImage(msgIndex, imgIndex);
   }
 
   private base64ToBlob(base64: string, mimeType: string): Blob {

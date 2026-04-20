@@ -62,41 +62,47 @@
                  (dragstart)="onDragStart($event, conv.id)"
                  (dragend)="onDragEnd($event)"
                  (click)="switchChat(conv.id)">
-              <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
-              <div class="conv-info">
-                @if (editingConvId() === conv.id) {
-                  <input class="conv-title-input"
-                         [(ngModel)]="editingConvTitle"
-                         (keydown)="onConvTitleKeydown($event)"
-                         (blur)="saveConvTitle($event)"
-                         (click)="$event.stopPropagation()"
-                         maxlength="80"
-                         autofocus />
-                } @else if (taggingConvId() === conv.id) {
-                  <input class="conv-title-input"
-                         [(ngModel)]="taggingConvValue"
-                         (keydown)="onConvTagKeydown($event)"
-                         (blur)="saveConvTag($event)"
-                         (click)="$event.stopPropagation()"
-                         placeholder="Tag name (or empty to remove)"
-                         maxlength="30"
-                         autofocus />
-                } @else {
-                  <span class="conv-title" [matTooltip]="conv.title" matTooltipShowDelay="0">{{ conv.title }}</span>
-                  <span class="conv-date">{{ conv.updatedAt | date:'short' }}</span>
-                }
+              <div class="conv-top-row">
+                <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
+                <div class="conv-info">
+                  @if (editingConvId() === conv.id) {
+                    <input class="conv-title-input"
+                           [(ngModel)]="editingConvTitle"
+                           (keydown)="onConvTitleKeydown($event)"
+                           (blur)="saveConvTitle($event)"
+                           (click)="$event.stopPropagation()"
+                           maxlength="80"
+                           autofocus />
+                  } @else if (taggingConvId() === conv.id) {
+                    <input class="conv-title-input"
+                           [(ngModel)]="taggingConvValue"
+                           (keydown)="onConvTagKeydown($event)"
+                           (blur)="saveConvTag($event)"
+                           (click)="$event.stopPropagation()"
+                           placeholder="Tag name (or empty to remove)"
+                           maxlength="30"
+                           autofocus />
+                  } @else {
+                    <span class="conv-title">{{ conv.title }}</span>
+                  }
+                </div>
               </div>
-              @if (editingConvId() !== conv.id && taggingConvId() !== conv.id) {
-                <button mat-icon-button class="conv-action" (click)="startTagConv($event, conv)" matTooltip="Tag">
-                  <mat-icon>{{ conv.tag ? 'label' : 'label_outline' }}</mat-icon>
-                </button>
-                <button mat-icon-button class="conv-action conv-edit" (click)="startEditConv($event, conv)" matTooltip="Rename">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              }
-              <button mat-icon-button class="conv-action conv-delete" (click)="deleteChat($event, conv.id)" matTooltip="Delete">
-                <mat-icon>delete_outline</mat-icon>
-              </button>
+              <div class="conv-bottom-row">
+                <span class="conv-date">{{ conv.updatedAt | date:'short' }}</span>
+                <div class="conv-actions">
+                  @if (editingConvId() !== conv.id && taggingConvId() !== conv.id) {
+                    <button mat-icon-button class="conv-action" (click)="startTagConv($event, conv)" matTooltip="Tag">
+                      <mat-icon>{{ conv.tag ? 'label' : 'label_outline' }}</mat-icon>
+                    </button>
+                    <button mat-icon-button class="conv-action conv-edit" (click)="startEditConv($event, conv)" matTooltip="Rename">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                  }
+                  <button mat-icon-button class="conv-action conv-delete" (click)="deleteChat($event, conv.id)" matTooltip="Delete">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
             </div>
           }
           }
@@ -268,7 +274,7 @@
           </div>
         }
 
-        @for (msg of displayMessages; track $index) {
+        @for (msg of displayMessages; track $index; let msgIdx = $index) {
           <div class="message" [class.user-message]="msg.role === 'user'" [class.model-message]="msg.role === 'model'" [class.pinned-message]="msg.pinned">
             @if (msg.role === 'model') {
               <mat-icon class="message-icon">pets</mat-icon>
@@ -290,9 +296,12 @@
               }
               @if (msg.generatedImages?.length) {
                 <div class="generated-images">
-                  @for (img of msg.generatedImages; track $index) {
+                  @for (img of msg.generatedImages; track $index; let imgIdx = $index) {
                     <div class="generated-image-wrapper">
                       <img [src]="'data:' + img.mimeType + ';base64,' + img.base64" alt="Generated image" class="generated-image" />
+                      <button mat-icon-button class="generated-img-delete" (click)="deleteGeneratedImage(msgIdx, imgIdx)" matTooltip="Delete image">
+                        <mat-icon>close</mat-icon>
+                      </button>
                       <button mat-icon-button class="generated-img-download" (click)="downloadGeneratedImage(img.base64, img.mimeType)" matTooltip="Download image">
                         <mat-icon>download</mat-icon>
                       </button>
