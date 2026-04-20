@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import { ChatService, AVAILABLE_AGENTS, ChatAttachment } from './chat.service';
 import { ConfirmDialog } from './confirm-dialog';
 import { marked } from 'marked';
@@ -28,6 +29,7 @@ import DOMPurify from 'dompurify';
     MatProgressBarModule,
     MatTooltipModule,
     MatDialogModule,
+    MatMenuModule,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
@@ -60,9 +62,6 @@ export class Chat implements OnInit {
   memoryInput = '';
   memoryPanelOpen = signal(false);
   showPinnedOnly = signal(false);
-  isListening = signal(false);
-  private recognition: any = null;
-
   readonly ACCEPTED_TYPES = 'image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,text/csv,text/html';
   private readonly MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
@@ -555,60 +554,6 @@ export class Chat implements OnInit {
     });
   }
 
-  toggleVoiceInput() {
-    if (this.isListening()) {
-      this.stopListening();
-      return;
-    }
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      this.error.set('Speech recognition is not supported in this browser.');
-      return;
-    }
-    this.recognition = new SpeechRecognition();
-    this.recognition.lang = 'en-US';
-    this.recognition.interimResults = true;
-    this.recognition.continuous = false;
-
-    const startText = this.userInput;
-    this.recognition.onresult = (event: any) => {
-      let interim = '';
-      let final = '';
-      for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          final += transcript;
-        } else {
-          interim += transcript;
-        }
-      }
-      this.userInput = startText + (startText ? ' ' : '') + (final || interim);
-    };
-    this.recognition.onend = () => {
-      this.isListening.set(false);
-      this.recognition = null;
-    };
-    this.recognition.onerror = (event: any) => {
-      if (event.error === 'not-allowed') {
-        this.error.set('Microphone access denied. Please allow microphone permission in your browser settings and try again.');
-      } else if (event.error !== 'aborted' && event.error !== 'no-speech') {
-        this.error.set(`Voice input error: ${event.error}`);
-      }
-      this.isListening.set(false);
-      this.recognition = null;
-    };
-
-    this.recognition.start();
-    this.isListening.set(true);
-  }
-
-  private stopListening() {
-    if (this.recognition) {
-      this.recognition.stop();
-    }
-    this.isListening.set(false);
-  }
-
   private base64ToBlob(base64: string, mimeType: string): Blob {
     const bytes = atob(base64);
     const arr = new Uint8Array(bytes.length);
@@ -616,6 +561,14 @@ export class Chat implements OnInit {
       arr[i] = bytes.charCodeAt(i);
     }
     return new Blob([arr], { type: mimeType });
+  }
+
+  async toggleLiveVoice() {
+    if (this.chatService.liveState() === 'active') {
+      await this.chatService.stopLiveConversation();
+    } else if (this.chatService.liveState() === 'idle') {
+      await this.chatService.startLiveConversation();
+    }
   }
 
   private scrollToBottom() {

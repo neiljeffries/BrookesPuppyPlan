@@ -122,42 +122,50 @@
         <mat-icon mat-card-avatar class="chat-avatar">pets</mat-icon>
         <mat-card-title><svg class="gemini-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 28C14 21.73 9.94 16.42 4.16 14.56L3.5 14.34 4.16 14.12C9.94 12.26 14 6.95 14 .68V0C14 6.27 18.06 11.58 23.84 13.44L24.5 13.66 23.84 13.88C18.06 15.74 14 21.05 14 27.32V28Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#1C7CEF"/><stop offset=".5" stop-color="#A084F2"/><stop offset="1" stop-color="#E07ACA"/></linearGradient></defs></svg> Gemini 3.1 Pro</mat-card-title>
         <mat-card-subtitle>Select agents to customize your chat</mat-card-subtitle>
-      </mat-card-header>
-      <div class="header-actions">
-        <button mat-stroked-button (click)="memoryPanelOpen.set(!memoryPanelOpen())" matTooltip="Persistent memory" aria-label="Persistent memory">
-          <mat-icon>{{ memoryPanelOpen() ? 'close' : 'psychology_alt' }}</mat-icon>
-          <span class="action-label">{{ memoryPanelOpen() ? 'Close' : 'Memory' }}</span>
+        <button mat-icon-button [matMenuTriggerFor]="chatMenu" class="header-menu-trigger" aria-label="Chat options">
+          <mat-icon>more_vert</mat-icon>
         </button>
-        <button mat-stroked-button (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())" matTooltip="Import custom agent" aria-label="Import custom instructions">
-          <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
-          <span class="action-label">{{ importOpen() ? 'Close' : 'Import' }}</span>
-        </button>
-        @if (messages.length) {
-          <button mat-stroked-button (click)="exportChat()" matTooltip="Export chat" aria-label="Export chat">
-            <mat-icon>download</mat-icon>
-            <span class="action-label">Export</span>
+        <mat-menu #chatMenu="matMenu">
+          <button mat-menu-item (click)="memoryPanelOpen.set(!memoryPanelOpen())">
+            <mat-icon>{{ memoryPanelOpen() ? 'close' : 'psychology_alt' }}</mat-icon>
+            <span>{{ memoryPanelOpen() ? 'Close Memory' : 'Memory' }}</span>
           </button>
-          @if (chatService.currentConversationId()) {
-            <button mat-stroked-button (click)="summarizeChat()" matTooltip="Auto-summarize title" aria-label="Summarize">
-              <mat-icon>auto_fix_high</mat-icon>
-              <span class="action-label">Summarize</span>
+          <button mat-menu-item (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())">
+            <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
+            <span>{{ importOpen() ? 'Close Import' : 'Import Agent' }}</span>
+          </button>
+          @if (messages.length) {
+            <button mat-menu-item (click)="exportChat()">
+              <mat-icon>download</mat-icon>
+              <span>Export</span>
+            </button>
+            @if (chatService.currentConversationId()) {
+              <button mat-menu-item (click)="summarizeChat()">
+                <mat-icon>auto_fix_high</mat-icon>
+                <span>Summarize</span>
+              </button>
+            }
+            <button mat-menu-item (click)="togglePinnedView()">
+              <mat-icon>{{ showPinnedOnly() ? 'push_pin' : 'outlined_flag' }}</mat-icon>
+              <span>{{ showPinnedOnly() ? 'Show All' : 'Pinned Only' }}</span>
+            </button>
+            <button mat-menu-item (click)="clear()">
+              <mat-icon>delete_outline</mat-icon>
+              <span>Clear</span>
             </button>
           }
-          <button mat-stroked-button (click)="togglePinnedView()" [matTooltip]="showPinnedOnly() ? 'Show all messages' : 'Show pinned only'" aria-label="Toggle pinned view">
-            <mat-icon>{{ showPinnedOnly() ? 'push_pin' : 'outlined_flag' }}</mat-icon>
-            <span class="action-label">{{ showPinnedOnly() ? 'All' : 'Pinned' }}</span>
-          </button>
-          <button mat-stroked-button (click)="clear()" matTooltip="Clear chat" aria-label="Clear chat history">
-            <mat-icon>delete_outline</mat-icon>
-            <span class="action-label">Clear</span>
-          </button>
-        }
-      </div>
+        </mat-menu>
+      </mat-card-header>
 
       <!-- Memory panel -->
       @if (memoryPanelOpen()) {
         <div class="memory-panel">
-          <p class="import-hint">Persistent facts are injected into the system prompt so the AI remembers them across conversations.</p>
+          <div class="panel-header">
+            <p class="import-hint">Persistent facts are injected into the system prompt so the AI remembers them across conversations.</p>
+            <button mat-icon-button class="panel-close" (click)="memoryPanelOpen.set(false)" aria-label="Close memory panel">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
           <div class="memory-input-row">
             <mat-form-field appearance="outline" class="memory-input-field">
               <mat-label>Add a fact…</mat-label>
@@ -187,7 +195,12 @@
       <!-- Import agent panel -->
       @if (importOpen()) {
         <div class="import-panel">
-          <p class="import-hint">{{ editingAgentId() ? 'Edit your custom agent\'s name and instructions.' : 'Add a custom agent by giving it a name and instructions. Upload a .md / .txt file or paste directly.' }}</p>
+          <div class="panel-header">
+            <p class="import-hint">{{ editingAgentId() ? 'Edit your custom agent\'s name and instructions.' : 'Add a custom agent by giving it a name and instructions. Upload a .md / .txt file or paste directly.' }}</p>
+            <button mat-icon-button class="panel-close" (click)="importOpen.set(false)" aria-label="Close import panel">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
           <mat-form-field appearance="outline" class="import-name-field">
             <mat-label>Agent name</mat-label>
             <input matInput [(ngModel)]="importName" maxlength="40" />
@@ -331,7 +344,23 @@
           <div class="message model-message">
             <mat-icon class="message-icon">pets</mat-icon>
             <div class="message-content">
-              <div class="message-bubble markdown-body" [innerHTML]="streamingHtml()"></div>
+              @if (chatService.streamingThought(); as thought) {
+                <details class="thinking-block" [attr.open]="chatService.streamingText() ? null : ''">
+                  <summary class="thinking-summary">
+                    <mat-icon class="thinking-icon">psychology</mat-icon>
+                    @if (!chatService.streamingText()) {
+                      <span class="thinking-label">Thinking…</span>
+                      <span class="thinking-dots"><span></span><span></span><span></span></span>
+                    } @else {
+                      <span class="thinking-label">Thought process</span>
+                    }
+                  </summary>
+                  <div class="thinking-content">{{ thought }}</div>
+                </details>
+              }
+              @if (chatService.streamingText()) {
+                <div class="message-bubble markdown-body" [innerHTML]="streamingHtml()"></div>
+              }
             </div>
           </div>
         }
@@ -372,29 +401,59 @@
             }
           </div>
         }
-        <div class="input-row">
-          <button mat-icon-button (click)="openAttachPicker()" [disabled]="loading()" matTooltip="Attach photo or document" aria-label="Attach file" class="attach-btn">
+        <div class="input-toolbar">
+          <button mat-icon-button (click)="openAttachPicker()" [disabled]="loading() || chatService.liveState() !== 'idle'" matTooltip="Attach photo or document" aria-label="Attach file" class="attach-btn">
             <mat-icon>attach_file</mat-icon>
           </button>
-          <button mat-icon-button (click)="chatService.toggleImageMode()" [class.image-mode-active]="chatService.imageMode()" [matTooltip]="chatService.imageMode() ? 'Switch to chat mode' : 'Switch to image generation'" aria-label="Toggle image generation" class="image-mode-btn">
+          <button mat-icon-button (click)="chatService.toggleImageMode()" [class.image-mode-active]="chatService.imageMode()" [matTooltip]="chatService.imageMode() ? 'Switch to chat mode' : 'Switch to image generation'" aria-label="Toggle image generation" class="image-mode-btn" [disabled]="chatService.liveState() !== 'idle'">
             <mat-icon>{{ chatService.imageMode() ? 'brush' : 'image' }}</mat-icon>
           </button>
+          <button mat-icon-button
+                  (click)="toggleLiveVoice()"
+                  [class.voice-active]="chatService.liveState() === 'active'"
+                  [class.voice-connecting]="chatService.liveState() === 'connecting'"
+                  [matTooltip]="chatService.liveState() === 'active' ? 'End voice conversation' : chatService.liveState() === 'connecting' ? 'Connecting…' : 'Start voice conversation'"
+                  [disabled]="chatService.liveState() === 'connecting'"
+                  aria-label="Toggle voice conversation"
+                  class="voice-btn">
+            <mat-icon>{{ chatService.liveState() === 'active' ? 'call_end' : 'headset_mic' }}</mat-icon>
+          </button>
           <input #chatAttachInput type="file" [accept]="ACCEPTED_TYPES" multiple hidden (change)="onAttachFiles($event)" />
+        </div>
+        <div class="input-row">
           <mat-form-field class="input-field" appearance="outline">
-            <mat-label>{{ chatService.imageMode() ? 'Describe an image to generate…' : 'Ask about your Yorkie…' }}</mat-label>
+            <mat-label>{{ chatService.imageMode() ? 'Describe an image to generate…' : 'Ask something…' }}</mat-label>
             <input matInput
                    [(ngModel)]="userInput"
                    (keydown)="onKeydown($event)"
                    [disabled]="loading()"
                    autocomplete="off" />
           </mat-form-field>
-          <button mat-icon-button (click)="toggleVoiceInput()" [disabled]="loading()" [class.voice-active]="isListening()" [matTooltip]="isListening() ? 'Stop listening' : 'Voice input'" aria-label="Voice input" class="voice-btn">
-            <mat-icon>{{ isListening() ? 'mic_off' : 'mic' }}</mat-icon>
-          </button>
-          <button mat-fab color="primary" (click)="send()" [disabled]="(!userInput.trim() && !pendingAttachments().length) || loading()" aria-label="Send message">
+          <button mat-fab color="primary" (click)="send()" [disabled]="(!userInput.trim() && !pendingAttachments().length) || loading() || chatService.liveState() !== 'idle'" aria-label="Send message">
             <mat-icon>send</mat-icon>
           </button>
         </div>
+
+        @if (chatService.liveState() === 'active' || chatService.liveState() === 'connecting') {
+          <div class="voice-active-bar">
+            @if (chatService.liveState() === 'connecting') {
+              <span class="voice-status-text">Connecting…</span>
+            } @else {
+              <span class="voice-visualizer"><span></span><span></span><span></span><span></span><span></span></span>
+              <span class="voice-status-text">Voice conversation active</span>
+            }
+            <button mat-stroked-button class="voice-end-btn" (click)="toggleLiveVoice()">
+              <mat-icon>call_end</mat-icon> End
+            </button>
+          </div>
+        }
+
+        @if (chatService.liveError()) {
+          <div class="voice-error">
+            <mat-icon>error_outline</mat-icon>
+            {{ chatService.liveError() }}
+          </div>
+        }
       </mat-card-actions>
     </mat-card>
   </div>

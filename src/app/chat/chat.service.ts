@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firebaseApp, db, ref, get, set, update, push, remove } from '../firebase';
-import { getAI, getGenerativeModel, GoogleAIBackend, ResponseModality } from 'firebase/ai';
-import type { ChatSession, GenerativeModel, AI } from 'firebase/ai';
+import { getAI, getGenerativeModel, getLiveGenerativeModel, startAudioConversation, GoogleAIBackend, ResponseModality } from 'firebase/ai';
+import type { ChatSession, GenerativeModel, AI, AudioConversationController, LiveSession } from 'firebase/ai';
 import { AuthService } from '../auth.service';
 
 const DATE_PREAMBLE = () => `Today's date is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
@@ -352,10 +352,17 @@ export class ChatService {
   readonly activeAgentIds = signal<string[]>([]);
   readonly customAgents = signal<AgentDef[]>([]);
   readonly streamingText = signal<string>('');
+  readonly streamingThought = signal<string>('');
   readonly isStreaming = signal(false);
   readonly memoryFacts = signal<MemoryFact[]>([]);
   readonly searchQuery = signal('');
   readonly imageMode = signal(false);
+
+  /* ── Live Voice Conversation ── */
+  readonly liveState = signal<'idle' | 'connecting' | 'active' | 'error'>('idle');
+  readonly liveError = signal('');
+  private liveSession: LiveSession | null = null;
+  private liveController: AudioConversationController | null = null;
 
   readonly filteredConversations = computed<ConversationSummary[]>(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -523,6 +530,9 @@ export class ChatService {
     return getGenerativeModel(this.ai, {
       model: 'gemini-3.1-pro-preview',
       systemInstruction: parts.join('\n\n'),
+      generationConfig: {
+        thinkingConfig: { includeThoughts: true },
+      },
     });
   }
 
@@ -865,11 +875,16 @@ export class ChatService {
     // Stream the response
     this.isStreaming.set(true);
     this.streamingText.set('');
+    this.streamingThought.set('');
     let fullText = '';
 
     try {
       const streamResult = await this.chat!.sendMessageStream(parts);
       for await (const chunk of streamResult.stream) {
+        const thought = chunk.thoughtSummary?.();
+        if (thought) {
+          this.streamingThought.set(thought);
+        }
         const chunkText = chunk.text();
         fullText += chunkText;
         this.streamingText.set(fullText);
@@ -877,11 +892,13 @@ export class ChatService {
     } catch (e) {
       this.isStreaming.set(false);
       this.streamingText.set('');
+      this.streamingThought.set('');
       throw e;
     }
 
     this.isStreaming.set(false);
     this.streamingText.set('');
+    this.streamingThought.set('');
     this.messages.update(msgs => [...msgs, { role: 'model', text: fullText }]);
 
     await this.saveConversation();
@@ -957,5 +974,47 @@ export class ChatService {
     this.messages.set([]);
     this.currentConversationId.set(null);
     this.startNewChat([]);
+  }
+
+  /* ── Live Voice Conversation ── */
+
+  async startLiveConversation(): Promise<void> {
+    if (this.liveState() !== 'idle') return;
+    this.liveState.set('connecting');
+    this.liveError.set('');
+
+    try {
+      const liveModel = getLiveGenerativeModel(this.ai, {
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        generationConfig: {
+          responseModalities: [ResponseModality.AUDIO],
+        },
+      });
+
+      this.liveSession = await liveModel.connect();
+      this.liveController = await startAudioConversation(this.liveSession);
+      this.liveState.set('active');
+    } catch (e: any) {
+      console.error('Live conversation error:', e);
+      this.liveError.set(e.message || 'Failed to start voice conversation.');
+      this.liveState.set('error');
+      this.liveSession = null;
+      this.liveController = null;
+    }
+  }
+
+  async stopLiveConversation(): Promise<void> {
+    try {
+      if (this.liveController) {
+        await this.liveController.stop();
+      }
+    } catch (e) {
+      console.error('Error stopping live conversation:', e);
+    } finally {
+      this.liveController = null;
+      this.liveSession = null;
+      this.liveState.set('idle');
+      this.liveError.set('');
+    }
   }
 }
