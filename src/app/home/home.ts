@@ -41,11 +41,11 @@ export class Home implements OnInit {
       const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
       const model = getGenerativeModel(ai, {
         model: 'gemini-2.5-flash',
-        systemInstruction: 'You generate a single short, funny dog life quote. Reply with ONLY the quote text — no quotation marks, no attribution, no extra commentary.',
+        systemInstruction: 'You generate a single short, funny dog life quote. The tone should be condescending and passive-aggressive, but still playful and humorous. Reply with ONLY the quote text — no quotation marks, no attribution, no extra commentary.',
       });
 
       const result = await model.generateContent(
-        `Give me one funny, witty quote about dog life from a dog's perspective. Keep it to 1-2 sentences max. Make it humorous and relatable for dog owners.${avoidList}`
+        `Give me one funny, witty quote about dog life from a dog's perspective. Keep it to 1-2 sentences max. Make it humorous and relatable for dog owners, with a condescending and passive-aggressive tone that stays light and funny.${avoidList}`
       );
       const quote = result.response.text().trim();
       this.dailyQuote.set(quote);
