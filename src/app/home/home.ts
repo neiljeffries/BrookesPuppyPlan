@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, WritableSignal, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,8 +6,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { firebaseApp, db, ref, get, set } from '../firebase';
+import { firebaseApp } from '../firebase';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
+import type { GenerativeModel } from 'firebase/ai';
 
 @Component({
   selector: 'app-home',
@@ -15,51 +16,115 @@ import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
-  readonly dailyQuote = signal<string>('');
+export class Home implements OnInit, OnDestroy {
+  readonly winstonReplies = signal<string[]>([]);
   readonly quoteLoading = signal(false);
+  readonly conversationRunning = signal(false);
+
+  @ViewChild('winstonLog') private winstonLog?: ElementRef<HTMLDivElement>;
+
+  private conversationRunId = 0;
+  private nextPrompt = 'Say something funny about dog life in one short sentence.';
+
+  private readonly ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
+  private readonly winstonModel = getGenerativeModel(this.ai, {
+    model: 'gemini-2.5-flash',
+    systemInstruction: 'You are Winston, a sassy Yorkie who delivers short, hilarious, playful observations about dog life. Keep responses to one short sentence, no emojis.',
+  });
 
   ngOnInit(): void {
-    this.loadQuote();
+    void this.startConversation();
   }
 
-  async loadQuote(): Promise<void> {
+  ngOnDestroy(): void {
+    this.stopConversation();
+  }
+
+  stopConversation(): void {
+    this.conversationRunId += 1;
+    this.conversationRunning.set(false);
+    this.quoteLoading.set(false);
+  }
+
+  refreshWinstonQuote(): void {
+    this.stopConversation();
+    void this.startConversation();
+  }
+
+  async startConversation(): Promise<void> {
+    if (this.conversationRunning()) {
+      return;
+    }
+
+    const runId = ++this.conversationRunId;
+    this.conversationRunning.set(true);
     this.quoteLoading.set(true);
+
+    const lastWinstonReply = this.winstonReplies().at(-1);
+    if (lastWinstonReply) {
+      this.nextPrompt = lastWinstonReply;
+    }
+
     try {
-      // Load previously used quotes to build avoid list
-      let usedQuotes: string[] = [];
-      try {
-        const usedSnap = await get(ref(db, `dailyQuote/used`));
-        const usedData = usedSnap.val();
-        if (usedData) usedQuotes = Object.values(usedData) as string[];
-      } catch { /* proceed without history */ }
+      while (runId === this.conversationRunId) {
+        this.quoteLoading.set(true);
+        const winstonReply = await this.generateDogReply(this.winstonModel, this.nextPrompt);
+        if (runId !== this.conversationRunId) {
+          return;
+        }
 
-      const avoidList = usedQuotes.length
-        ? '\n\nDo NOT repeat any of these previously used quotes:\n' + usedQuotes.map(q => '- "' + q + '"').join('\n')
-        : '';
+        this.appendReply(this.winstonReplies, winstonReply, 'winston');
+        this.nextPrompt = winstonReply;
+        this.quoteLoading.set(false);
 
-      const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
-      const model = getGenerativeModel(ai, {
-        model: 'gemini-2.5-flash',
-        systemInstruction: 'You generate a single short, funny dog life quote. The tone should be condescending and passive-aggressive, but still playful and humorous. Reply with ONLY the quote text — no quotation marks, no attribution, no extra commentary.',
-      });
-
-      const result = await model.generateContent(
-        `Give me one funny, witty quote about dog life from a dog's perspective. Keep it to 1-2 sentences max. Make it humorous and relatable for dog owners, with a condescending and passive-aggressive tone that stays light and funny.${avoidList}`
-      );
-      const quote = result.response.text().trim();
-      this.dailyQuote.set(quote);
-
-      // Persist to used list (best-effort)
-      const usedKey = Date.now().toString(36);
-      set(ref(db, `dailyQuote/used/${usedKey}`), quote)
-        .catch(e => console.warn('Could not persist quote to DB:', e));
+        const continueLoop = await this.pauseForNextTurn(runId);
+        if (!continueLoop) {
+          return;
+        }
+      }
     } catch (e) {
-      console.error('Failed to load quote:', e);
-      this.dailyQuote.set('Every day is a good day when you have a dog! 🐾');
-    } finally {
+      console.error('Failed to generate Winston quote:', e);
+      if (!this.winstonReplies().length) {
+        this.appendReply(this.winstonReplies, 'I was about to roast you, but I saw a squirrel and lost the plot.', 'winston');
+      }
       this.quoteLoading.set(false);
+    } finally {
+      if (runId === this.conversationRunId) {
+        this.conversationRunning.set(false);
+      }
     }
   }
 
+  private async generateDogReply(model: GenerativeModel, incomingText: string): Promise<string> {
+    const result = await model.generateContent(
+      `Say something funny about dog life based on this: "${incomingText}". Keep it to one short, witty line (under 18 words).`
+    );
+
+    const reply = result.response.text().replace(/\s+/g, ' ').trim();
+    return reply || '...';
+  }
+
+  private pause(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private appendReply(target: WritableSignal<string[]>, reply: string, speaker: 'winston'): void {
+    target.update(existing => [...existing, reply]);
+    this.scheduleAutoScroll();
+  }
+
+  private scheduleAutoScroll(): void {
+    requestAnimationFrame(() => {
+      const logElement = this.winstonLog?.nativeElement;
+
+      if (logElement) {
+        logElement.scrollTop = logElement.scrollHeight;
+      }
+    });
+  }
+
+  private async pauseForNextTurn(runId: number): Promise<boolean> {
+    await this.pause(600000); // 10 minutes
+    return runId === this.conversationRunId;
+  }
 }

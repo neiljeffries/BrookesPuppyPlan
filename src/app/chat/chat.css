@@ -1398,6 +1398,110 @@
   background: rgba(229, 57, 53, 0.08);
 }
 
+
+/* ── Real-Time Feedback Styling ── */
+
+.streaming-metrics {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.metric-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+}
+
+.metric-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.streaming-progress {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.metric-value {
+  min-width: 35px;
+  text-align: right;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.token-count {
+  font-family: monospace;
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.confidence-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.confidence-high {
+  background: rgba(76, 175, 80, 0.2);
+  color: #2e7d32;
+}
+
+.confidence-medium {
+  background: rgba(255, 193, 7, 0.2);
+  color: #f57f17;
+}
+
+.confidence-low {
+  background: rgba(244, 67, 54, 0.2);
+  color: #c62828;
+}
+
+/* Dark mode support */
+:host-context(.dark-theme) .streaming-metrics {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark-theme) .metric-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+:host-context(.dark-theme) .metric-value {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:host-context(.dark-theme) .confidence-high {
+  background: rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}
+
+:host-context(.dark-theme) .confidence-medium {
+  background: rgba(255, 193, 7, 0.3);
+  color: #ffd54f;
+}
+
+:host-context(.dark-theme) .confidence-low {
+  background: rgba(244, 67, 54, 0.3);
+  color: #ef5350;
+}
+
 .voice-error mat-icon {
   font-size: 18px;
   width: 18px;

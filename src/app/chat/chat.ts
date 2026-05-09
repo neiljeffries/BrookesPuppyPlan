@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild, inject, signal, computed } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +20,7 @@ import DOMPurify from 'dompurify';
   selector: 'app-chat',
   imports: [
     DatePipe,
+    UpperCasePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -153,6 +154,10 @@ export class Chat implements OnInit {
 
   newChat() {
     this.chatService.newConversation();
+    this.chatService.streamingProgress.set(0);
+    this.chatService.tokenUsageInput.set(0);
+    this.chatService.tokenUsageOutput.set(0);
+    this.chatService.responseConfidence.set('medium');
     this.error.set('');
     this.sidebarOpen.set(false);
   }

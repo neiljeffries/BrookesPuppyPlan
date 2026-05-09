@@ -2,27 +2,28 @@
   <div class="winston-quote-row">
     <div class="puppy-wrapper">
       <img src="winston.jpg" alt="Winston the Yorkie" class="puppy-img" />
+      <p class="dog-name">Winston</p>
     </div>
 
-    <!-- Winston's speech bubble -->
-    <div class="speech-bubble">
+    <div class="speech-bubble winston-bubble">
+      <div class="quote-log" #winstonLog>
+        @for (line of winstonReplies(); track $index) {
+          <p class="quote-line">{{ line }}</p>
+        }
+      </div>
+
       @if (quoteLoading()) {
         <div class="quote-loading">
           <mat-spinner diameter="20"></mat-spinner>
           <span>Winston is thinking...</span>
         </div>
-      } @else if (dailyQuote()) {
-        <p class="quote-text">{{ dailyQuote() }}</p>
-        <button mat-icon-button
-                class="refresh-quote-btn"
-                matTooltip="New quote"
-                (click)="loadQuote()"
-                [disabled]="quoteLoading()">
-          <mat-icon>refresh</mat-icon>
-        </button>
       }
     </div>
   </div>
+
+  <button mat-stroked-button (click)="refreshWinstonQuote()" [disabled]="quoteLoading()" matTooltip="Get a new Winston quote">
+    <mat-icon>refresh</mat-icon>
+  </button>
 
   <h1>Plan Your Perfect Yorkie Journey!</h1>
   <p>Everything you need to prepare for bringing home your new Yorkshire Terrier.</p>

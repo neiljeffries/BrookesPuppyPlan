@@ -79,6 +79,21 @@ function sanitizeText(text: string): string {
   return text.replaceAll(/[<>]/g, '').trim();
 }
 
+/** Estimate token count: ~4 chars per token (rough approximation for Gemini) */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+/** Determine confidence based on response length and structure */
+function getResponseConfidence(text: string, hasThought: boolean): 'high' | 'medium' | 'low' {
+  // High confidence: response has extended thinking + substantial content
+  if (hasThought && text.length > 300) return 'high';
+  // Medium confidence: moderate length response
+  if (text.length > 100) return 'medium';
+  // Low confidence: very short response
+  return 'low';
+}
+
 export const AVAILABLE_AGENTS: AgentDef[] = [
   {
     id: 'winston',
@@ -318,6 +333,8 @@ export interface ChatMessage {
   attachments?: ChatAttachment[];
   pinned?: boolean;
   generatedImages?: GeneratedImage[];
+  tokenCount?: number; // estimated tokens used in this message
+  confidence?: 'high' | 'medium' | 'low'; // response quality confidence
 }
 
 export interface MemoryFact {
@@ -357,6 +374,13 @@ export class ChatService {
   readonly memoryFacts = signal<MemoryFact[]>([]);
   readonly searchQuery = signal('');
   readonly imageMode = signal(false);
+
+  /* ── Real-Time Feedback ── */
+  readonly streamingProgress = signal<number>(0); // 0-100
+  readonly tokenUsageInput = signal<number>(0);
+  readonly tokenUsageOutput = signal<number>(0);
+  readonly responseConfidence = signal<'high' | 'medium' | 'low'>('medium');
+  readonly estimatedTotalTokens = signal<number>(0);
 
   /* ── Live Voice Conversation ── */
   readonly liveState = signal<'idle' | 'connecting' | 'active' | 'error'>('idle');
@@ -859,6 +883,12 @@ export class ChatService {
     if (attachments?.length) {
       userMsg.attachments = attachments;
     }
+
+    // Estimate input tokens
+    const inputTokens = estimateTokens(userMessage);
+    userMsg.tokenCount = inputTokens;
+    this.tokenUsageInput.set(inputTokens);
+
     this.messages.update(msgs => [...msgs, userMsg]);
 
     // Build multimodal parts for Gemini
@@ -876,30 +906,67 @@ export class ChatService {
     this.isStreaming.set(true);
     this.streamingText.set('');
     this.streamingThought.set('');
+    this.streamingProgress.set(0);
+    this.tokenUsageOutput.set(0);
+    this.responseConfidence.set('medium');
+
     let fullText = '';
+    let lastThought = '';
 
     try {
       const streamResult = await this.chat!.sendMessageStream(parts);
+
       for await (const chunk of streamResult.stream) {
         const thought = chunk.thoughtSummary?.();
         if (thought) {
+          lastThought = thought;
           this.streamingThought.set(thought);
         }
+
         const chunkText = chunk.text();
         fullText += chunkText;
+
         this.streamingText.set(fullText);
+
+        // Update token count and confidence in real-time
+        const outputTokens = estimateTokens(fullText);
+        this.tokenUsageOutput.set(outputTokens);
+        this.responseConfidence.set(getResponseConfidence(fullText, !!lastThought));
+
+        // Update progress: estimate based on response pattern
+        // Responses typically range from 100-2000 tokens
+        const estimatedMax = 2000;
+        const estimatedTokens = Math.min(outputTokens, estimatedMax);
+        const progress = Math.min(99, Math.round((estimatedTokens / estimatedMax) * 100));
+        this.streamingProgress.set(progress);
       }
     } catch (e) {
       this.isStreaming.set(false);
       this.streamingText.set('');
       this.streamingThought.set('');
+      this.streamingProgress.set(0);
       throw e;
     }
 
+    // Mark as complete
     this.isStreaming.set(false);
     this.streamingText.set('');
     this.streamingThought.set('');
-    this.messages.update(msgs => [...msgs, { role: 'model', text: fullText }]);
+    this.streamingProgress.set(100);
+
+    // Final token count and confidence
+    const finalOutputTokens = estimateTokens(fullText);
+    this.tokenUsageOutput.set(finalOutputTokens);
+    this.responseConfidence.set(getResponseConfidence(fullText, !!lastThought));
+    this.estimatedTotalTokens.set(inputTokens + finalOutputTokens);
+
+    const modelMsg: ChatMessage = {
+      role: 'model',
+      text: fullText,
+      tokenCount: finalOutputTokens,
+      confidence: this.responseConfidence(),
+    };
+    this.messages.update(msgs => [...msgs, modelMsg]);
 
     await this.saveConversation();
 

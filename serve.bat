@@ -1,3 +1,4 @@
 @echo off
-cd /d "C:\Users\n_e_i\OneDrive\Desktop\BrookesPuppyPlan\BrookesPuppyPlan"
-ng serve --open
+setlocal
+cd /d "%~dp0"
+npx ng serve --open

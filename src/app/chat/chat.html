@@ -350,7 +350,7 @@
 
         <!-- Streaming response -->
         @if (chatService.isStreaming()) {
-          <div class="message model-message">
+          <div class="message model-message streaming-message">
             <mat-icon class="message-icon">pets</mat-icon>
             <div class="message-content">
               @if (chatService.streamingThought(); as thought) {
@@ -367,8 +367,53 @@
                   <div class="thinking-content">{{ thought }}</div>
                 </details>
               }
+
               @if (chatService.streamingText()) {
                 <div class="message-bubble markdown-body" [innerHTML]="streamingHtml()"></div>
+
+                <!-- Real-Time Feedback Metrics -->
+                <div class="streaming-metrics">
+                  <!-- Streaming Progress Bar -->
+                  <div class="metric-row">
+                    <span class="metric-label">
+                      <mat-icon class="metric-icon">progress_activity</mat-icon>
+                      Loading…
+                    </span>
+                    <mat-progress-bar
+                      mode="determinate"
+                      [value]="chatService.streamingProgress()"
+                      class="streaming-progress">
+                    </mat-progress-bar>
+                    <span class="metric-value">{{ chatService.streamingProgress() }}%</span>
+                  </div>
+
+                  <!-- Token Usage -->
+                  <div class="metric-row">
+                    <span class="metric-label">
+                      <mat-icon class="metric-icon">calculate</mat-icon>
+                      Tokens
+                    </span>
+                    <span class="token-count">
+                      ↑ {{ chatService.tokenUsageInput() }} | ↓ {{ chatService.tokenUsageOutput() }}
+                    </span>
+                  </div>
+
+                  <!-- Response Confidence -->
+                  <div class="metric-row">
+                    <span class="metric-label">
+                      <mat-icon class="metric-icon">verified</mat-icon>
+                      Confidence
+                    </span>
+                    <span class="confidence-badge" [class]="'confidence-' + chatService.responseConfidence()">
+                      {{ chatService.responseConfidence() | uppercase }}
+                    </span>
+                  </div>
+                </div>
+              } @else {
+                <!-- Typing indicator while thinking -->
+                <div class="message-bubble typing-indicator">
+                  <span></span><span></span><span></span>
+                </div>
               }
             </div>
           </div>
