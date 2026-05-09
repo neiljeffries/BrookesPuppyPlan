@@ -136,6 +136,23 @@
             <mat-icon>{{ memoryPanelOpen() ? 'close' : 'psychology_alt' }}</mat-icon>
             <span>{{ memoryPanelOpen() ? 'Close Memory' : 'Memory' }}</span>
           </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="decreaseFontSize()" [disabled]="fontSizeScale() <= MIN_FONT_SIZE">
+            <mat-icon>text_decrease</mat-icon>
+            <span>Smaller text</span>
+          </button>
+          <button mat-menu-item disabled>
+            <span>{{ (fontSizeScale() * 100).toFixed(0) }}%</span>
+          </button>
+          <button mat-menu-item (click)="increaseFontSize()" [disabled]="fontSizeScale() >= MAX_FONT_SIZE">
+            <mat-icon>text_increase</mat-icon>
+            <span>Larger text</span>
+          </button>
+          <button mat-menu-item (click)="resetFontSize()" [disabled]="fontSizeScale() === 1">
+            <mat-icon>close</mat-icon>
+            <span>Reset size</span>
+          </button>
+          <mat-divider></mat-divider>
           <button mat-menu-item (click)="editingAgentId() ? cancelEdit() : importOpen.set(!importOpen())">
             <mat-icon>{{ importOpen() ? 'close' : 'upload_file' }}</mat-icon>
             <span>{{ importOpen() ? 'Close Import' : 'Import Agent' }}</span>
@@ -266,7 +283,7 @@
         <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
       }
 
-      <mat-card-content #scrollContainer class="messages-container">
+      <mat-card-content #scrollContainer class="messages-container" [style.font-size]="fontSizeScale() * 16 + 'px'">
         @if (!messages.length && !loading()) {
           <div class="empty-state">
             <span class="empty-paw">🐾</span>
@@ -340,7 +357,49 @@
                 <button mat-icon-button class="msg-action-btn" (click)="togglePin($index)" [matTooltip]="msg.pinned ? 'Unpin' : 'Pin'">
                   <mat-icon>{{ msg.pinned ? 'push_pin' : 'outlined_flag' }}</mat-icon>
                 </button>
+                <button mat-icon-button class="msg-action-btn" (click)="toggleBookmark($index)" [matTooltip]="msg.bookmarked ? 'Remove from favorites' : 'Add to favorites'" [class.bookmarked]="msg.bookmarked">
+                  <mat-icon>{{ msg.bookmarked ? 'star' : 'star_outline' }}</mat-icon>
+                </button>
+                @if (msg.role === 'model') {
+                  <button mat-icon-button class="msg-action-btn" (click)="regenerateMessage($index)" [disabled]="loading()" matTooltip="Regenerate response">
+                    <mat-icon>refresh</mat-icon>
+                  </button>
+                  <button mat-icon-button class="msg-action-btn" (click)="branchConversation($index)" matTooltip="Branch from here">
+                    <mat-icon>call_split</mat-icon>
+                  </button>
+                }
+                <button mat-icon-button class="msg-action-btn" [matMenuTriggerFor]="reactionsMenu" matTooltip="Add reaction">
+                  <mat-icon>mood</mat-icon>
+                </button>
+                <mat-menu #reactionsMenu="matMenu">
+                  @for (emoji of ['👍', '❤️', '😂', '🔥', '💡', '✨']; track emoji) {
+                    <button mat-menu-item (click)="addReaction($index, emoji)">
+                      {{ emoji }}
+                    </button>
+                  }
+                </mat-menu>
               </div>
+              @if (msg.reactions && (msg.reactions | keyvalue).length) {
+                <div class="message-reactions">
+                  @for (reaction of msg.reactions | keyvalue; track reaction.key) {
+                    <button class="reaction-badge" (click)="removeReaction($index, reaction.key)" [title]="'Click to remove reaction'">
+                      {{ reaction.key }} {{ reaction.value }}
+                    </button>
+                  }
+                </div>
+              }
+              @if (msg.role === 'model' && msg.suggestedFollowups?.length) {
+                <div class="suggested-followups">
+                  <div class="followups-label">Next questions:</div>
+                  <div class="followups-list">
+                    @for (followup of msg.suggestedFollowups; track $index) {
+                      <button class="followup-button" (click)="applyTemplate({label: '', prompt: followup})">
+                        {{ followup }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
             </div>
             @if (msg.role === 'user') {
               <mat-icon class="message-icon">person</mat-icon>
@@ -456,6 +515,22 @@
           </div>
         }
         <div class="input-toolbar">
+          <button mat-icon-button [matMenuTriggerFor]="templatesMenu" matTooltip="Quick templates" aria-label="Quick templates" class="templates-btn">
+            <mat-icon>description</mat-icon>
+          </button>
+          <mat-menu #templatesMenu="matMenu">
+            @for (template of QUICK_TEMPLATES; track template.label) {
+              <button mat-menu-item (click)="applyTemplate(template)">
+                {{ template.label }}
+              </button>
+            }
+          </mat-menu>
+          <button mat-icon-button (click)="searchChat()" matTooltip="Search chat history" aria-label="Search" class="search-btn" [class.active]="showSearchResults()">
+            <mat-icon>search</mat-icon>
+          </button>
+          <button mat-icon-button (click)="showBookmarkedMessages()" matTooltip="Show bookmarked messages" aria-label="Bookmarks" class="bookmarks-btn" [class.active]="showBookmarked()">
+            <mat-icon>bookmark</mat-icon>
+          </button>
           <button mat-icon-button (click)="openAttachPicker()" [disabled]="loading() || chatService.liveState() !== 'idle'" matTooltip="Attach photo or document" aria-label="Attach file" class="attach-btn">
             <mat-icon>attach_file</mat-icon>
           </button>
@@ -474,6 +549,69 @@
           </button>
           <input #chatAttachInput type="file" [accept]="ACCEPTED_TYPES" multiple hidden (change)="onAttachFiles($event)" />
         </div>
+
+        <!-- Quick Templates Quick Access -->
+        @if (userInput === '') {
+          <div class="quick-templates">
+            <span class="templates-hint">💡 Tip: Use quick templates above or type a question</span>
+          </div>
+        }
+
+        <!-- Search Results Panel -->
+        @if (showSearchResults()) {
+          <div class="search-results-panel">
+            <div class="search-panel-header">
+              <mat-form-field appearance="outline" class="search-field">
+                <mat-icon matPrefix>search</mat-icon>
+                <input matInput placeholder="Search in chat…" [(ngModel)]="searchChatQuery" (keyup)="searchChat()" />
+              </mat-form-field>
+              <button mat-icon-button (click)="closeSearchResults()" matTooltip="Close">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            @if (searchResults().length) {
+              <div class="search-results-list">
+                @for (result of searchResults(); track result.index) {
+                  <div class="search-result-item">
+                    <span class="result-preview">{{ result.highlighted }}</span>
+                    <button mat-stroked-button size="small" (click)="applyTemplate({label: '', prompt: result.text})">Use as prompt</button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="no-results">No messages found</div>
+            }
+          </div>
+        }
+
+        <!-- Bookmarked Messages Panel -->
+        @if (showBookmarked()) {
+          <div class="bookmarked-panel">
+            <div class="bookmarked-header">
+              <h3>Bookmarked Messages</h3>
+              <button mat-icon-button (click)="closeBookmarked()" matTooltip="Close">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            @if (bookmarkedMessages().length) {
+              <div class="bookmarked-list">
+                @for (msg of bookmarkedMessages(); track msg.index) {
+                  <div class="bookmarked-item">
+                    <div class="bookmarked-preview">{{ msg.text | slice:0:150 }}...</div>
+                    <div class="bookmarked-actions">
+                      <button mat-stroked-button size="small" (click)="applyTemplate({label: '', prompt: msg.text})">Use</button>
+                      <button mat-icon-button (click)="copyMessage(msg.text)" matTooltip="Copy">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="no-bookmarks">No bookmarked messages yet</div>
+            }
+          </div>
+        }
         <div class="input-row">
           <mat-form-field class="input-field" appearance="outline">
             <mat-label>{{ chatService.imageMode() ? 'Describe an image to generate…' : 'Ask something…' }}</mat-label>

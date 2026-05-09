@@ -335,6 +335,12 @@ export interface ChatMessage {
   generatedImages?: GeneratedImage[];
   tokenCount?: number; // estimated tokens used in this message
   confidence?: 'high' | 'medium' | 'low'; // response quality confidence
+  reactions?: Record<string, number>; // emoji -> count (e.g. { '👍': 2, '❤️': 1 })
+  bookmarked?: boolean; // saved as favorite
+  suggestedFollowups?: string[]; // AI-suggested next questions
+  branchId?: string; // for conversation branching
+  parentMessageId?: string; // parent message in branch
+  regenerationCount?: number; // how many times this message was regenerated
 }
 
 export interface MemoryFact {
@@ -965,6 +971,7 @@ export class ChatService {
       text: fullText,
       tokenCount: finalOutputTokens,
       confidence: this.responseConfidence(),
+      suggestedFollowups: this.extractSuggestedFollowups(fullText),
     };
     this.messages.update(msgs => [...msgs, modelMsg]);
 
@@ -1096,5 +1103,141 @@ export class ChatService {
       this.liveState.set('idle');
       this.liveError.set('');
     }
+  }
+
+  /* ── Message Reactions ── */
+  addReaction(messageIndex: number, emoji: string): void {
+    const msgs = this.messages();
+    if (messageIndex < 0 || messageIndex >= msgs.length) return;
+    const msg = msgs[messageIndex];
+    msg.reactions = msg.reactions || {};
+    msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
+    this.messages.set([...msgs]);
+    this.saveConversation();
+  }
+
+  removeReaction(messageIndex: number, emoji: string): void {
+    const msgs = this.messages();
+    if (messageIndex < 0 || messageIndex >= msgs.length) return;
+    const msg = msgs[messageIndex];
+    if (!msg.reactions || !msg.reactions[emoji]) return;
+    msg.reactions[emoji]--;
+    if (msg.reactions[emoji] <= 0) {
+      delete msg.reactions[emoji];
+    }
+    this.messages.set([...msgs]);
+    this.saveConversation();
+  }
+
+  /* ── Message Bookmarks ── */
+  toggleBookmark(messageIndex: number): void {
+    const msgs = this.messages();
+    if (messageIndex < 0 || messageIndex >= msgs.length) return;
+    msgs[messageIndex].bookmarked = !msgs[messageIndex].bookmarked;
+    this.messages.set([...msgs]);
+    this.saveConversation();
+  }
+
+  getBookmarkedMessages(): (ChatMessage & { index: number })[] {
+    return this.messages()
+      .map((m, i) => ({ ...m, index: i }))
+      .filter(m => m.bookmarked);
+  }
+
+  /* ── Message Regeneration ── */
+  async regenerateMessage(messageIndex: number): Promise<string> {
+    const msgs = this.messages();
+    if (messageIndex < 0 || messageIndex >= msgs.length) return '';
+
+    const msg = msgs[messageIndex];
+    if (msg.role !== 'model') return '';
+
+    // Find the user message before this response
+    let userMessageIndex = messageIndex - 1;
+    while (userMessageIndex >= 0 && msgs[userMessageIndex].role !== 'user') {
+      userMessageIndex--;
+    }
+
+    if (userMessageIndex < 0) return '';
+
+    const userMessage = msgs[userMessageIndex].text;
+    msg.regenerationCount = (msg.regenerationCount || 0) + 1;
+
+    // Generate a new response for the user message
+    return this.send(userMessage);
+  }
+
+  /* ── Search within Chat ── */
+  searchMessages(query: string): (ChatMessage & { index: number; highlighted: string })[] {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return this.messages()
+      .map((m, i) => {
+        const text = m.text.toLowerCase();
+        if (text.includes(q)) {
+          const start = Math.max(0, text.indexOf(q) - 50);
+          const end = Math.min(m.text.length, text.indexOf(q) + q.length + 50);
+          const highlighted = m.text.substring(start, end).trim();
+          return { ...m, index: i, highlighted };
+        }
+        return null;
+      })
+      .filter((m): m is ChatMessage & { index: number; highlighted: string } => m !== null);
+  }
+
+  /* ── Conversation Branching ── */
+  branchFromMessage(messageIndex: number): string {
+    const newConvId = `branch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const msgs = this.messages();
+
+    // Create a branch with messages up to and including this index
+    const branchedMessages = msgs.slice(0, messageIndex + 1).map(m => ({
+      ...m,
+      branchId: newConvId,
+    }));
+
+    const currentConv = this.conversations().find(c => c.id === this.currentConversationId());
+    const newConversation: ConversationSummary = {
+      id: newConvId,
+      title: `Branch: ${currentConv?.title || 'Conversation'}`,
+      updatedAt: Date.now(),
+    };
+
+    this.conversations.update(convs => [...convs, newConversation]);
+    this.currentConversationId.set(newConvId);
+    this.messages.set(branchedMessages);
+    this.startNewChat(branchedMessages);
+
+    return newConvId;
+  }
+
+  /* ── Suggested Follow-ups (auto-extracted from responses) ── */
+  private extractSuggestedFollowups(text: string): string[] {
+    // Look for common question patterns at the end of responses
+    const followupPatterns = [
+      /(?:would you like|would you want|do you want|do you have|can i help you with).*?\?/gi,
+      /(?:here are some follow-up questions:|next steps:|you might also want to).*?$/gi,
+    ];
+
+    const suggestions: string[] = [];
+    for (const pattern of followupPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        suggestions.push(...matches.slice(0, 3)); // limit to 3
+      }
+    }
+
+    return suggestions.slice(0, 3); // max 3 suggestions
+  }
+
+  setSuggestedFollowups(messageIndex: number): void {
+    const msgs = this.messages();
+    if (messageIndex < 0 || messageIndex >= msgs.length) return;
+    const msg = msgs[messageIndex];
+    if (msg.role !== 'model') return;
+
+    msg.suggestedFollowups = this.extractSuggestedFollowups(msg.text);
+    this.messages.set([...msgs]);
+    this.saveConversation();
   }
 }

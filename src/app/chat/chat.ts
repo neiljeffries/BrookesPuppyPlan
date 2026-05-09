@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild, inject, signal, computed } from '@angular/core';
-import { DatePipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe, KeyValuePipe, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { ChatService, AVAILABLE_AGENTS, ChatAttachment } from './chat.service';
 import { ConfirmDialog } from './confirm-dialog';
 import { marked } from 'marked';
@@ -21,6 +22,8 @@ import DOMPurify from 'dompurify';
   imports: [
     DatePipe,
     UpperCasePipe,
+    KeyValuePipe,
+    SlicePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -31,6 +34,7 @@ import DOMPurify from 'dompurify';
     MatTooltipModule,
     MatDialogModule,
     MatMenuModule,
+    MatDividerModule,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
@@ -63,8 +67,29 @@ export class Chat implements OnInit {
   memoryInput = '';
   memoryPanelOpen = signal(false);
   showPinnedOnly = signal(false);
+  searchChatQuery = signal('');
+  searchResults = signal<any[]>([]);
+  showSearchResults = signal(false);
+  bookmarkedMessages = signal<any[]>([]);
+  showBookmarked = signal(false);
+  fontSizeScale = signal<number>(1); // 1 = 100%, 1.1 = 110%, etc.
+  readonly MIN_FONT_SIZE = 0.8; // 80%
+  readonly MAX_FONT_SIZE = 1.5; // 150%
+  readonly FONT_SIZE_STEP = 0.1; // 10% per click
+  private readonly FONT_SIZE_STORAGE_KEY = 'chat_font_size_scale';
   readonly ACCEPTED_TYPES = 'image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,text/csv,text/html';
   private readonly MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
+  private readonly DRAFT_STORAGE_KEY = 'chat_draft_input';
+  private readonly DRAFT_AUTO_SAVE_INTERVAL = 5000; // 5 seconds
+
+  readonly QUICK_TEMPLATES = [
+    { label: "Winston's Daily Schedule", prompt: "Create a daily schedule for Winston's training and activities." },
+    { label: 'Vaccination Questions', prompt: 'What vaccinations does Winston need and when?' },
+    { label: 'Training Tips', prompt: 'Give me some training tips for Winston right now.' },
+    { label: 'Behavior Problems', prompt: 'Winston is having behavioral issues. What should I do?' },
+    { label: 'Grooming Guide', prompt: 'How should I groom Winston properly?' },
+    { label: 'Diet & Nutrition', prompt: 'What is the best diet for a young Yorkie?' },
+  ];
 
   get messages() {
     return this.chatService.messages();
@@ -90,6 +115,17 @@ export class Chat implements OnInit {
     this.chatService.loadCustomInstruction();
     this.chatService.loadCustomAgents();
     this.chatService.loadMemory();
+
+    // Load draft from localStorage
+    this.loadDraft();
+
+    // Load saved font size
+    this.loadFontSize();
+
+    // Set up auto-save for draft
+    setInterval(() => {
+      this.saveDraft();
+    }, this.DRAFT_AUTO_SAVE_INTERVAL);
   }
 
   async send() {
@@ -585,5 +621,146 @@ export class Chat implements OnInit {
       const el = this.scrollContainer?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
     });
+  }
+
+  /* ── Draft Auto-Save ── */
+  private saveDraft(): void {
+    if (this.userInput.trim()) {
+      try {
+        localStorage.setItem(this.DRAFT_STORAGE_KEY, this.userInput);
+      } catch (e) {
+        console.error('Failed to save draft:', e);
+      }
+    }
+  }
+
+  private loadDraft(): void {
+    try {
+      const draft = localStorage.getItem(this.DRAFT_STORAGE_KEY);
+      if (draft) {
+        this.userInput = draft;
+      }
+    } catch (e) {
+      console.error('Failed to load draft:', e);
+    }
+  }
+
+  clearDraft(): void {
+    try {
+      localStorage.removeItem(this.DRAFT_STORAGE_KEY);
+      this.userInput = '';
+    } catch (e) {
+      console.error('Failed to clear draft:', e);
+    }
+  }
+
+  /* ── Font Size Management ── */
+  private loadFontSize(): void {
+    try {
+      const saved = localStorage.getItem(this.FONT_SIZE_STORAGE_KEY);
+      if (saved) {
+        const scale = parseFloat(saved);
+        if (scale >= this.MIN_FONT_SIZE && scale <= this.MAX_FONT_SIZE) {
+          this.fontSizeScale.set(scale);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load font size:', e);
+    }
+  }
+
+  private saveFontSize(): void {
+    try {
+      localStorage.setItem(this.FONT_SIZE_STORAGE_KEY, this.fontSizeScale().toString());
+    } catch (e) {
+      console.error('Failed to save font size:', e);
+    }
+  }
+
+  increaseFontSize(): void {
+    const newScale = Math.min(this.fontSizeScale() + this.FONT_SIZE_STEP, this.MAX_FONT_SIZE);
+    this.fontSizeScale.set(newScale);
+    this.saveFontSize();
+  }
+
+  decreaseFontSize(): void {
+    const newScale = Math.max(this.fontSizeScale() - this.FONT_SIZE_STEP, this.MIN_FONT_SIZE);
+    this.fontSizeScale.set(newScale);
+    this.saveFontSize();
+  }
+
+  resetFontSize(): void {
+    this.fontSizeScale.set(1);
+    this.saveFontSize();
+  }
+
+  /* ── Quick Templates ── */
+  applyTemplate(template: { label: string; prompt: string }): void {
+    this.userInput = template.prompt;
+    this.saveDraft();
+    this.scrollToBottom();
+  }
+
+  /* ── Search within Chat ── */
+  searchChat(): void {
+    const query = this.searchChatQuery();
+    if (query.trim()) {
+      const results = this.chatService.searchMessages(query);
+      this.searchResults.set(results);
+      this.showSearchResults.set(true);
+    } else {
+      this.showSearchResults.set(false);
+      this.searchResults.set([]);
+    }
+  }
+
+  closeSearchResults(): void {
+    this.showSearchResults.set(false);
+    this.searchResults.set([]);
+    this.searchChatQuery.set('');
+  }
+
+  /* ── Message Actions ── */
+  addReaction(messageIndex: number, emoji: string): void {
+    this.chatService.addReaction(messageIndex, emoji);
+  }
+
+  removeReaction(messageIndex: number, emoji: string): void {
+    this.chatService.removeReaction(messageIndex, emoji);
+  }
+
+  toggleBookmark(messageIndex: number): void {
+    this.chatService.toggleBookmark(messageIndex);
+    this.updateBookmarkedMessages();
+  }
+
+  private updateBookmarkedMessages(): void {
+    this.bookmarkedMessages.set(this.chatService.getBookmarkedMessages());
+  }
+
+  showBookmarkedMessages(): void {
+    this.updateBookmarkedMessages();
+    this.showBookmarked.set(true);
+  }
+
+  closeBookmarked(): void {
+    this.showBookmarked.set(false);
+  }
+
+  async regenerateMessage(messageIndex: number): Promise<void> {
+    this.loading.set(true);
+    try {
+      await this.chatService.regenerateMessage(messageIndex);
+      this.scrollToBottom();
+    } catch (e: any) {
+      this.error.set('Failed to regenerate message: ' + (e.message || 'Unknown error'));
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  branchConversation(messageIndex: number): void {
+    const newConvId = this.chatService.branchFromMessage(messageIndex);
+    this.chatService.switchConversation(newConvId);
   }
 }
